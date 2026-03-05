@@ -20,7 +20,10 @@ target 'PayoApps' do
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    # Disable New Architecture to avoid Hermes inspector issues
+    :fabric_enabled => false,
+    :hermes_enabled => true
   )
 
   post_install do |installer|

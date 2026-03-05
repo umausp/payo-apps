@@ -1,45 +1,38 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
+ * PAYO - QR-Based Digital Payment Platform
+ * Main Application Entry Point
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import React, { useEffect } from 'react';
+import { StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Provider as ReduxProvider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'react-native-get-random-values'; // Required for crypto operations
+
+import { store, persistor } from './src/presentation/store';
+import RootNavigator from './src/presentation/navigation/RootNavigator';
+import { logApiConfiguration } from './src/utils/debugNetwork';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  useEffect(() => {
+    // Log API configuration on app start
+    logApiConfiguration();
+  }, []);
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ReduxProvider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <SafeAreaProvider>
+            <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+            <RootNavigator />
+          </SafeAreaProvider>
+        </PersistGate>
+      </ReduxProvider>
+    </GestureHandlerRootView>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;

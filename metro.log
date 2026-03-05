@@ -1,0 +1,79 @@
+
+> PayoApps@0.0.1 start
+> react-native start --reset-cache
+
+
+Welcome to React Native v0.84
+Starting dev server on http://localhost:8081
+
+
+                        ▒▒▓▓▓▓▒▒
+                     ▒▓▓▓▒▒░░▒▒▓▓▓▒
+                  ▒▓▓▓▓░░░▒▒▒▒░░░▓▓▓▓▒
+                 ▓▓▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▓▓
+                 ▓▓░░░░░▒▓▓▓▓▓▓▒░░░░░▓▓
+                 ▓▓░░▓▓▒░░░▒▒░░░▒▓▒░░▓▓
+                 ▓▓░░▓▓▓▓▓▒▒▒▒▓▓▓▓▒░░▓▓
+                 ▓▓░░▓▓▓▓▓▓▓▓▓▓▓▓▓▒░░▓▓
+                 ▓▓▒░░▒▒▓▓▓▓▓▓▓▓▒░░░▒▓▓
+                  ▒▓▓▓▒░░░▒▓▓▒░░░▒▓▓▓▒
+                     ▒▓▓▓▒░░░░▒▓▓▓▒
+                        ▒▒▓▓▓▓▒▒
+
+
+ WARN  the transform cache was reset.
+                Welcome to Metro v0.83.5
+              Fast - Scalable - Integrated
+
+
+ INFO  Dev server ready. Press Ctrl+C to exit.
+ INFO  Interactive mode is not supported in this environment
+ BUNDLE  ./index.js ░░░░░░░░░░░░░░░░ 0% (0/1)
+ BUNDLE  ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 83% (751/822)
+ WARN  Attempted to import the module "/Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/node_modules/@noble/hashes/crypto.js" which is not listed in the "exports" of "/Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/node_modules/@noble/hashes" under the requested subpath "./crypto.js". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
+ BUNDLE  ./index.js 
+ ERROR  SyntaxError: /Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/src/presentation/hooks/useBiometric.ts: Unexpected token (10:29)
+
+   8 | import { enableBiometric as enableBiometricAction, disableBiometric as disableBiometricAction } from '../store/slices/authSlice';
+   9 |
+> 10 | export const useBiometric = (): UseBiometricReturn {
+     |                              ^
+  11 |   const dispatch = useAppDispatch();
+  12 |   const { biometricEnabled } = useAppSelector((state) => state.auth);
+  13 |   const [isAvailable, setIsAvailable] = useState(false);
+ BUNDLE  ./index.js ░░░░░░░░░░░░░░░░ 0% (0/1)
+ WARN  Attempted to import the module "/Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/node_modules/@noble/hashes/crypto.js" which is not listed in the "exports" of "/Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/node_modules/@noble/hashes" under the requested subpath "./crypto.js". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
+ BUNDLE  ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89% (1308/1385)
+ BUNDLE  ./index.js 
+ ERROR  SyntaxError: /Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/src/presentation/hooks/useBiometric.ts: Unexpected token (10:29)
+
+   8 | import { enableBiometric as enableBiometricAction, disableBiometric as disableBiometricAction } from '../store/slices/authSlice';
+   9 |
+> 10 | export const useBiometric = (): UseBiometricReturn {
+     |                              ^
+  11 |   const dispatch = useAppDispatch();
+  12 |   const { biometricEnabled } = useAppSelector((state) => state.auth);
+  13 |   const [isAvailable, setIsAvailable] = useState(false);
+ BUNDLE  ./index.js ░░░░░░░░░░░░░░░░ 0% (0/1)
+ BUNDLE  ./index.js 
+ ERROR  SyntaxError: /Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/src/presentation/hooks/useBiometric.ts: Unexpected token (10:29)
+
+   8 | import { enableBiometric as enableBiometricAction, disableBiometric as disableBiometricAction } from '../store/slices/authSlice';
+   9 |
+> 10 | export const useBiometric = (): UseBiometricReturn {
+     |                              ^
+  11 |   const dispatch = useAppDispatch();
+  12 |   const { biometricEnabled } = useAppSelector((state) => state.auth);
+  13 |   const [isAvailable, setIsAvailable] = useState(false);
+ BUNDLE  ./index.js ░░░░░░░░░░░░░░░░ 0% (0/1)
+ WARN  Attempted to import the module "/Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/node_modules/@noble/hashes/crypto.js" which is not listed in the "exports" of "/Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/node_modules/@noble/hashes" under the requested subpath "./crypto.js". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
+ BUNDLE  ./index.js 
+ ERROR  SyntaxError: /Users/umashankar.pathak/Documents/Learn_Node/project/payo-apps/src/presentation/hooks/useBiometric.ts: Unexpected token (10:29)
+
+   8 | import { enableBiometric as enableBiometricAction, disableBiometric as disableBiometricAction } from '../store/slices/authSlice';
+   9 |
+> 10 | export const useBiometric = (): UseBiometricReturn {
+     |                              ^
+  11 |   const dispatch = useAppDispatch();
+  12 |   const { biometricEnabled } = useAppSelector((state) => state.auth);
+  13 |   const [isAvailable, setIsAvailable] = useState(false);
