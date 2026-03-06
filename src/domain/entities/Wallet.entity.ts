@@ -5,26 +5,37 @@ export class WalletEntity {
   constructor(
     public readonly address: string,
     public readonly publicKey: string,
-    public balance: string = '0',
+    public balance: string = '0', // PAYO token balance
     public fiatBalance: string = '0',
     public readonly isNonCustodial: boolean = true,
     public readonly createdAt: Date = new Date(),
+    public nativeBalance: string = '0', // ETH balance for gas
   ) {}
 
   /**
    * Update wallet balance
    */
-  updateBalance(newBalance: string, fiatBalance: string): void {
+  updateBalance(newBalance: string, fiatBalance: string, nativeBalance?: string): void {
     this.balance = newBalance;
     this.fiatBalance = fiatBalance;
+    if (nativeBalance !== undefined) {
+      this.nativeBalance = nativeBalance;
+    }
   }
 
   /**
    * Check if wallet has sufficient balance for transaction
+   * @param amount - Amount in PAYO tokens
+   * @param gasFee - Gas fee in ETH
    */
   hasSufficientBalance(amount: string, gasFee: string): boolean {
-    const totalRequired = parseFloat(amount) + parseFloat(gasFee);
-    return parseFloat(this.balance) >= totalRequired;
+    // Check PAYO token balance
+    const hasEnoughTokens = parseFloat(this.balance) >= parseFloat(amount);
+
+    // Check ETH balance for gas
+    const hasEnoughGas = parseFloat(this.nativeBalance) >= parseFloat(gasFee);
+
+    return hasEnoughTokens && hasEnoughGas;
   }
 
   /**
@@ -42,7 +53,7 @@ export class WalletEntity {
   }
 
   /**
-   * Convert to plain object
+   * Convert to plain object (Redux serializable)
    */
   toObject() {
     return {
@@ -50,8 +61,9 @@ export class WalletEntity {
       publicKey: this.publicKey,
       balance: this.balance,
       fiatBalance: this.fiatBalance,
+      nativeBalance: this.nativeBalance,
       isNonCustodial: this.isNonCustodial,
-      createdAt: this.createdAt,
+      createdAt: this.createdAt.toISOString(), // Convert Date to string for Redux
     };
   }
 }

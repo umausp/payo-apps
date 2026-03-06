@@ -81,10 +81,17 @@ export class ApiService {
 
         // Log to console with full URL
         const fullUrl = `${config.baseURL}${config.url}`;
+        console.log('='.repeat(80));
         console.log('[API Request]', config.method?.toUpperCase(), fullUrl);
-        if (config.data) {
-          console.log('[API Request Body]', JSON.stringify(config.data, null, 2));
+        console.log('[Request Headers]', JSON.stringify(config.headers, null, 2));
+        console.log('[Authorization]', config.headers?.Authorization || 'MISSING');
+        if (config.headers?.['Idempotency-Key']) {
+          console.log('[Idempotency-Key]', config.headers['Idempotency-Key']);
         }
+        if (config.data) {
+          console.log('[Request Body]', JSON.stringify(config.data, null, 2));
+        }
+        console.log('='.repeat(80));
 
         // Log to file
         FileLogger.logRequest(
@@ -114,8 +121,11 @@ export class ApiService {
         const fullUrl = `${response.config.baseURL}${response.config.url}`;
 
         // Log to console
+        console.log('='.repeat(80));
         console.log('[API Response]', response.status, fullUrl, `(${duration}ms)`);
-        console.log('[API Response Data]', JSON.stringify(response.data, null, 2));
+        console.log('[Response Headers]', JSON.stringify(response.headers, null, 2));
+        console.log('[Response Data]', JSON.stringify(response.data, null, 2));
+        console.log('='.repeat(80));
 
         // Log to file
         FileLogger.logResponse(
@@ -130,11 +140,18 @@ export class ApiService {
       },
       (error: AxiosError) => {
         const fullUrl = error.config?.baseURL ? `${error.config.baseURL}${error.config.url}` : error.config?.url || 'UNKNOWN';
+        const duration = (error.config as any)?.startTime
+          ? Date.now() - (error.config as any).startTime
+          : undefined;
 
-        console.error('[API Error]', error.response?.status, fullUrl, error.message);
+        console.log('='.repeat(80));
+        console.error('[API Error]', error.response?.status, fullUrl, `(${duration}ms)`, error.message);
+        console.error('[Error Request Headers]', JSON.stringify(error.config?.headers, null, 2));
+        console.error('[Error Authorization]', error.config?.headers?.Authorization || 'MISSING');
         if (error.response?.data) {
-          console.error('[API Error Data]', JSON.stringify(error.response.data, null, 2));
+          console.error('[Error Response Data]', JSON.stringify(error.response.data, null, 2));
         }
+        console.log('='.repeat(80));
 
         // Log error to file
         FileLogger.logError(
@@ -151,10 +168,44 @@ export class ApiService {
   private setupAuthInterceptor(client: AxiosInstance) {
     // Request interceptor - add JWT token only
     client.interceptors.request.use(
-      (config) => {
-        if (this.tokens.accessToken) {
-          config.headers.Authorization = `Bearer ${this.tokens.accessToken}`;
+      async (config) => {
+        console.log('[Auth Interceptor] Checking for access token...');
+
+        // If tokens are not in memory, try to restore from AsyncStorage
+        if (!this.tokens.accessToken) {
+          console.warn('[Auth Interceptor] ⚠️ No access token in memory, attempting to restore from storage...');
+          try {
+            const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
+            const persistedState = await AsyncStorage.getItem('persist:root');
+
+            if (persistedState) {
+              const parsedState = JSON.parse(persistedState);
+              if (parsedState.auth) {
+                const authState = JSON.parse(parsedState.auth);
+                if (authState.accessToken && authState.refreshToken) {
+                  console.log('[Auth Interceptor] ✓ Found tokens in storage, restoring...');
+                  this.tokens.accessToken = authState.accessToken;
+                  this.tokens.refreshToken = authState.refreshToken;
+                } else {
+                  console.error('[Auth Interceptor] ✗ No tokens found in persisted auth state');
+                }
+              }
+            } else {
+              console.error('[Auth Interceptor] ✗ No persisted state found');
+            }
+          } catch (error) {
+            console.error('[Auth Interceptor] ✗ Failed to restore tokens from storage:', error);
+          }
         }
+
+        if (this.tokens.accessToken) {
+          console.log('[Auth Interceptor] ✓ Adding Bearer token to request');
+          config.headers.Authorization = `Bearer ${this.tokens.accessToken}`;
+        } else {
+          console.error('[Auth Interceptor] ✗ CRITICAL: No access token available after restoration attempt!');
+          console.error('[Auth Interceptor] ✗ This request will fail with 401 Unauthorized');
+        }
+
         return config;
       },
       (error) => Promise.reject(error)
@@ -216,16 +267,60 @@ export class ApiService {
   // ============================================================================
 
   setTokens(accessToken: string, refreshToken: string) {
+    console.log('='.repeat(80));
+    console.log('[ApiService] Setting JWT tokens');
+    console.log('[Access Token]', accessToken.substring(0, 20) + '...' + accessToken.substring(accessToken.length - 10));
+    console.log('[Refresh Token]', refreshToken.substring(0, 20) + '...' + refreshToken.substring(refreshToken.length - 10));
+    console.log('='.repeat(80));
     this.tokens.accessToken = accessToken;
     this.tokens.refreshToken = refreshToken;
   }
 
   clearTokens() {
+    console.log('='.repeat(80));
+    console.log('[ApiService] Clearing JWT tokens');
+    console.log('='.repeat(80));
     this.tokens.accessToken = null;
     this.tokens.refreshToken = null;
   }
 
+  async getAccessTokenAsync(): Promise<string | null> {
+    console.log('[ApiService] Getting access token...');
+
+    // If token exists in memory, return it
+    if (this.tokens.accessToken) {
+      console.log('[ApiService] ✓ Token exists in memory');
+      return this.tokens.accessToken;
+    }
+
+    // If not in memory, try to restore from AsyncStorage
+    console.log('[ApiService] Token not in memory, checking AsyncStorage...');
+    try {
+      const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
+      const persistedState = await AsyncStorage.getItem('persist:root');
+
+      if (persistedState) {
+        const parsedState = JSON.parse(persistedState);
+        if (parsedState.auth) {
+          const authState = JSON.parse(parsedState.auth);
+          if (authState.accessToken && authState.refreshToken) {
+            console.log('[ApiService] ✓ Found tokens in AsyncStorage, restoring...');
+            this.tokens.accessToken = authState.accessToken;
+            this.tokens.refreshToken = authState.refreshToken;
+            return this.tokens.accessToken;
+          }
+        }
+      }
+      console.log('[ApiService] ✗ No tokens found in AsyncStorage');
+      return null;
+    } catch (error) {
+      console.error('[ApiService] ✗ Failed to restore tokens from AsyncStorage:', error);
+      return null;
+    }
+  }
+
   getAccessToken(): string | null {
+    console.log('[ApiService] Getting access token (sync):', this.tokens.accessToken ? 'EXISTS' : 'NULL');
     return this.tokens.accessToken;
   }
 
@@ -361,11 +456,13 @@ export class ApiService {
     return this.request<Types.PaymentSubmitResponse>(this.paymentClient, {
       method: 'POST',
       url: API.ENDPOINTS.PAYMENT_SUBMIT,
+      headers: {
+        'Idempotency-Key': idempotencyKey,
+      },
       data: {
-        forwardRequest,
+        request: forwardRequest, // Backend expects 'request' not 'forwardRequest'
         signature,
-        idempotencyKey,
-      } as Types.PaymentSubmitRequest,
+      },
     });
   }
 

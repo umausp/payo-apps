@@ -5,13 +5,18 @@ import { Platform } from 'react-native';
 export const APP_NAME = 'PAYO';
 export const APP_VERSION = '1.0.0';
 
-// Blockchain Configuration (Hardhat Local Network for Testing)
+// Blockchain Configuration - Sepolia Testnet (Deployed: March 6, 2026)
 export const BLOCKCHAIN = {
-  RPC_URL: Platform.OS === 'android' ? 'http://10.0.2.2:8545' : 'http://localhost:8545',
-  CHAIN_ID: 31337, // Hardhat Local Network
-  TOKEN_ADDRESS: '0x0B306BF915C4d645ff596e518fAf3F9669b97016', // PAYO Token on Hardhat
-  ORACLE_ADDRESS: '0x...', // Price Oracle Contract Address (not needed for Hardhat testing)
-  EXPLORER_URL: 'http://localhost:8545', // Hardhat has no explorer
+  // RPC_URL: Platform.OS === 'android' ? 'http://10.0.2.2:8545' : 'http://localhost:8545', // Local Hardhat
+  RPC_URL: 'https://ethereum-sepolia-rpc.publicnode.com', // Sepolia Testnet
+  CHAIN_ID: 11155111, // Sepolia Testnet
+  TOKEN_ADDRESS: '0xA5B2A8BF51de02981A52185986875C31db6B437B', // PAYO Token on Sepolia
+  PAYMENT_PROCESSOR: '0x990E95b0b12E1fcCd811E920270E68D23C135b08', // Payment Processor
+  FORWARDER_ADDRESS: '0x5969E5EFB87f94fb4731bC8192AA725b73345A19', // MinimalForwarder
+  VESTING_MANAGER: '0x93558E9430459cd5dCEA2Aa80A853d481910D17A', // Vesting Manager
+  REFUND_MANAGER: '0x49E212EA1629E3AdC1FD87af9B5A4410DC468E30', // Refund Manager
+  ORACLE_ADDRESS: '0x...', // Price Oracle Contract Address
+  EXPLORER_URL: 'https://sepolia.etherscan.io', // Sepolia Explorer
   SYMBOL: 'PAYO',
   DECIMALS: 18,
   GAS_LIMIT: 100000,
@@ -138,7 +143,7 @@ export const QR = {
 export const WALLET = {
   MNEMONIC_STRENGTH: 128, // 12 words (as per PDF spec)
   DERIVATION_PATH: "m/44'/60'/0'/0/0", // Ethereum standard
-  BALANCE_REFRESH_INTERVAL: 30000, // 30 seconds
+  // BALANCE_REFRESH_INTERVAL: 30000, // Not used - balance refreshed on-demand only
 } as const;
 
 // Validation Rules

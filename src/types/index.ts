@@ -4,10 +4,11 @@ export interface Wallet {
   address: string;
   balance: string;
   fiatBalance: string;
+  nativeBalance: string; // ETH balance for gas fees
   privateKey?: string; // Only stored encrypted in secure storage
   publicKey: string;
   isNonCustodial: boolean;
-  createdAt: Date;
+  createdAt: string; // ISO date string for Redux serialization
 }
 
 export interface Transaction {

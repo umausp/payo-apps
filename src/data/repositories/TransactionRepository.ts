@@ -6,6 +6,7 @@ import { TransactionEntity } from '../../domain/entities/Transaction.entity';
 import { TransactionStatus, TransactionType } from '../../types';
 import BlockchainService from '../../infrastructure/blockchain/BlockchainService';
 import AsyncStorageService from '../../infrastructure/storage/AsyncStorageService';
+import PaymentService from '../../infrastructure/payment/PaymentService';
 import { STORAGE_KEYS, TRANSACTION } from '../../constants';
 
 export class TransactionRepository implements ITransactionRepository {
@@ -13,7 +14,7 @@ export class TransactionRepository implements ITransactionRepository {
   private asyncStorage = AsyncStorageService;
 
   /**
-   * Send transaction to blockchain
+   * Send transaction via payment service (EIP-2771 meta-transaction)
    */
   async sendTransaction(
     to: string,
@@ -24,23 +25,26 @@ export class TransactionRepository implements ITransactionRepository {
     try {
       const wallet = this.blockchainService.importWalletFromPrivateKey(privateKey);
 
-      const txData = await this.blockchainService.sendTransaction(
+      // Send payment through payment service (goes through PaymentProcessor)
+      const result = await PaymentService.sendPayment({
+        from: wallet.address,
         to,
         amount,
         privateKey,
-      );
+      });
 
-      const { gasFee } = await this.estimateGas(to, amount);
+      // Estimate gas for display purposes
+      const { gasFee, gasPrice, gasLimit } = await this.estimateGas(to, amount);
 
       const transaction = new TransactionEntity(
-        txData.hash,
-        txData.hash,
+        result.txHash,
+        result.txHash,
         wallet.address,
         to,
         amount,
         '0', // Will be calculated with price
-        txData.gasPrice,
-        txData.gasLimit,
+        gasPrice,
+        gasLimit,
         gasFee,
         TransactionStatus.PENDING,
         new Date(),

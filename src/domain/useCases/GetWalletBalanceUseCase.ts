@@ -5,8 +5,9 @@ import { IWalletRepository } from '../repositories/IWalletRepository';
 import { IPriceRepository } from '../repositories/IPriceRepository';
 
 export interface WalletBalance {
-  balance: string;
+  balance: string; // PAYO token balance
   fiatBalance: string;
+  nativeBalance: string; // ETH balance for gas
 }
 
 export class GetWalletBalanceUseCase {
@@ -23,14 +24,17 @@ export class GetWalletBalanceUseCase {
         throw new Error('Wallet not found. Please create or import a wallet.');
       }
 
-      // Fetch balance from blockchain
+      // Fetch PAYO token balance from blockchain
       const balance = await this.walletRepository.getBalance(wallet.address);
+
+      // Fetch native ETH balance for gas
+      const nativeBalance = await this.walletRepository.getNativeBalance(wallet.address);
 
       // Convert to fiat
       const fiatBalance = await this.priceRepository.convertToFiat(balance);
 
-      // Update wallet entity
-      wallet.updateBalance(balance, fiatBalance);
+      // Update wallet entity with both balances
+      wallet.updateBalance(balance, fiatBalance, nativeBalance);
 
       // Save updated wallet
       const privateKey = await this.walletRepository.getPrivateKey();
@@ -41,6 +45,7 @@ export class GetWalletBalanceUseCase {
       return {
         balance,
         fiatBalance,
+        nativeBalance,
       };
     } catch (error) {
       throw new Error(

@@ -78,6 +78,7 @@ export interface ForwardRequest {
   value: string;
   gas: string;
   nonce: string;
+  deadline: string;
   data: string;
 }
 
@@ -88,10 +89,10 @@ export interface PaymentSubmitRequest {
 }
 
 export interface PaymentSubmitResponse {
-  transactionId: string;
+  id?: string; // Payment transaction ID in backend DB
+  txHash: string;
   status: 'submitted' | 'pending' | 'confirmed' | 'failed';
-  txHash?: string;
-  message: string;
+  error?: string;
 }
 
 export interface PaymentStatusRequest {

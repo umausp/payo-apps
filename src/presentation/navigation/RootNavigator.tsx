@@ -8,6 +8,7 @@ import { RootStackParamList } from '../../types';
 import { useAppSelector, useAppDispatch } from '../hooks/useRedux';
 import { loadWallet } from '../store/slices/walletSlice';
 import { setHasWallet, setLoading } from '../store/slices/appSlice';
+import ApiService from '../../infrastructure/api/ApiService';
 
 // Import screens (will be created)
 import SplashScreen from '../screens/Splash/SplashScreen';
@@ -26,6 +27,7 @@ import PaymentSuccessScreen from '../screens/Payment/Success/PaymentSuccessScree
 import ReceiveScreen from '../screens/Receive/ReceiveScreen';
 import SettingsScreen from '../screens/Settings/SettingsScreen';
 import LogViewerScreen from '../screens/Logs/LogViewerScreen';
+import TransactionDetailsScreen from '../screens/Transaction/TransactionDetailsScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -34,12 +36,31 @@ export const RootNavigator: React.FC = () => {
   const { isLoading, hasWallet, onboardingCompleted } = useAppSelector(
     (state) => state.app,
   );
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, accessToken, refreshToken } = useAppSelector((state) => state.auth);
   const { wallet } = useAppSelector((state) => state.wallet);
 
   useEffect(() => {
     initializeApp();
   }, []);
+
+  // Restore JWT tokens to ApiService when auth state is rehydrated
+  useEffect(() => {
+    console.log('[RootNavigator] Auth state changed:');
+    console.log('  - isAuthenticated:', isAuthenticated);
+    console.log('  - accessToken exists:', !!accessToken);
+    console.log('  - refreshToken exists:', !!refreshToken);
+
+    if (isAuthenticated && accessToken && refreshToken) {
+      console.log('[RootNavigator] ✓ Restoring JWT tokens to ApiService');
+      ApiService.setTokens(accessToken, refreshToken);
+    } else if (!isAuthenticated) {
+      console.log('[RootNavigator] ✗ User not authenticated, clearing tokens');
+      ApiService.clearTokens();
+    } else if (isAuthenticated && (!accessToken || !refreshToken)) {
+      console.error('[RootNavigator] ⚠️ WARNING: User is authenticated but tokens are missing!');
+      console.error('  This will cause 401 errors on API calls');
+    }
+  }, [isAuthenticated, accessToken, refreshToken]);
 
   // Only set hasWallet when wallet exists AND user is authenticated
   // This prevents navigation issues during wallet creation flow
@@ -120,6 +141,7 @@ export const RootNavigator: React.FC = () => {
             <Stack.Screen name="Receive" component={ReceiveScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="LogViewer" component={LogViewerScreen} />
+            <Stack.Screen name="TransactionDetails" component={TransactionDetailsScreen} />
           </>
         )}
       </Stack.Navigator>

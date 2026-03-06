@@ -31,16 +31,15 @@ export const useWallet = (): UseWalletReturn & {
     dispatch(loadWallet());
   }, [dispatch]);
 
-  // Auto-refresh balance
-  useEffect(() => {
-    if (!wallet) return;
-
-    const interval = setInterval(() => {
-      dispatch(refreshBalance());
-    }, WALLET.BALANCE_REFRESH_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, [wallet, dispatch]);
+  // Auto-refresh balance - DISABLED
+  // Balance refreshed on-demand only (pull-to-refresh or manual)
+  // useEffect(() => {
+  //   if (!wallet) return;
+  //   const interval = setInterval(() => {
+  //     dispatch(refreshBalance());
+  //   }, 30000); // 30 seconds
+  //   return () => clearInterval(interval);
+  // }, [wallet, dispatch]);
 
   const refreshWalletBalance = useCallback(async () => {
     await dispatch(refreshBalance()).unwrap();

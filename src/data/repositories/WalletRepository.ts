@@ -25,10 +25,11 @@ export class WalletRepository implements IWalletRepository {
       const walletEntity = new WalletEntity(
         ethersWallet.address,
         ethersWallet.publicKey,
-        '0',
-        '0',
+        '0', // PAYO balance
+        '0', // Fiat balance
         true,
         new Date(),
+        '0', // Native ETH balance
       );
 
       // Save wallet (encrypted) to secure storage
@@ -56,10 +57,11 @@ export class WalletRepository implements IWalletRepository {
       const walletEntity = new WalletEntity(
         ethersWallet.address,
         ethersWallet.publicKey,
-        '0',
-        '0',
+        '0', // PAYO balance
+        '0', // Fiat balance
         true,
         new Date(),
+        '0', // Native ETH balance
       );
 
       // Save wallet (encrypted) to secure storage
@@ -95,6 +97,7 @@ export class WalletRepository implements IWalletRepository {
         walletData.fiatBalance || '0',
         walletData.isNonCustodial !== false,
         new Date(walletData.createdAt),
+        walletData.nativeBalance || '0',
       );
     } catch (error) {
       console.error('Failed to get wallet:', error);
@@ -137,13 +140,25 @@ export class WalletRepository implements IWalletRepository {
   }
 
   /**
-   * Get wallet balance from blockchain
+   * Get wallet balance from blockchain (PAYO tokens)
    */
   async getBalance(address: string): Promise<string> {
     try {
       return await this.blockchainService.getBalance(address);
     } catch (error) {
       console.error('Failed to get balance:', error);
+      return '0';
+    }
+  }
+
+  /**
+   * Get native balance from blockchain (ETH for gas)
+   */
+  async getNativeBalance(address: string): Promise<string> {
+    try {
+      return await this.blockchainService.getNativeBalance(address);
+    } catch (error) {
+      console.error('Failed to get native balance:', error);
       return '0';
     }
   }

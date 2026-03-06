@@ -27,6 +27,10 @@ const initialState: WalletState = {
   seedPhrase: null,
 };
 
+// Rate limiting: Track last refresh time to prevent excessive API calls
+let lastRefreshTime = 0;
+const REFRESH_COOLDOWN_MS = 5000; // 5 seconds minimum between refreshes
+
 // Async Thunks
 export const createWallet = createAsyncThunk(
   'wallet/create',
@@ -86,6 +90,14 @@ export const refreshBalance = createAsyncThunk(
   'wallet/refreshBalance',
   async (_, { rejectWithValue, getState }) => {
     try {
+      // Rate limiting: Prevent excessive API calls
+      const now = Date.now();
+      if (now - lastRefreshTime < REFRESH_COOLDOWN_MS) {
+        console.log('[Rate Limit] Skipping balance refresh, too soon');
+        return rejectWithValue('Rate limited: Please wait before refreshing again');
+      }
+      lastRefreshTime = now;
+
       const state = getState() as any;
       const wallet = state.wallet.wallet;
 
@@ -114,6 +126,9 @@ export const refreshBalance = createAsyncThunk(
       // Convert wei to human-readable format
       const balanceInTokens = (BigInt(balanceWei) / BigInt(10 ** decimals)).toString();
 
+      // Fetch native ETH balance for gas
+      const nativeBalance = await WalletRepository.getNativeBalance(wallet.address);
+
       // Get USD price
       const price = await PriceRepository.getCurrentPrice();
       const fiatBalance = (parseFloat(balanceInTokens) * price.priceUSD).toFixed(2);
@@ -121,6 +136,7 @@ export const refreshBalance = createAsyncThunk(
       return {
         balance: balanceInTokens,
         fiatBalance,
+        nativeBalance,
       };
     } catch (error) {
       return rejectWithValue(
@@ -219,9 +235,19 @@ const walletSlice = createSlice({
       .addCase(refreshBalance.fulfilled, (state, action) => {
         state.balance = action.payload.balance;
         state.fiatBalance = action.payload.fiatBalance;
+        // Also update wallet object balances for screens that read directly from wallet
+        if (state.wallet) {
+          state.wallet.balance = action.payload.balance;
+          state.wallet.fiatBalance = action.payload.fiatBalance;
+          state.wallet.nativeBalance = action.payload.nativeBalance;
+        }
       })
       .addCase(refreshBalance.rejected, (state, action) => {
-        state.error = action.payload as string;
+        // Don't show rate limit errors as actual errors
+        const errorMsg = action.payload as string;
+        if (!errorMsg?.includes('Rate limited')) {
+          state.error = errorMsg;
+        }
       });
 
     // Delete Wallet

@@ -5,6 +5,7 @@ import { IWalletRepository } from '../repositories/IWalletRepository';
 import { ITransactionRepository } from '../repositories/ITransactionRepository';
 import { TransactionEntity } from '../entities/Transaction.entity';
 import { WalletEntity } from '../entities/Wallet.entity';
+import TokenApprovalService from '../../infrastructure/blockchain/TokenApprovalService';
 
 export interface SendPaymentParams {
   to: string;
@@ -45,13 +46,34 @@ export class SendPaymentUseCase {
         throw new Error('Private key not found. Cannot sign transaction.');
       }
 
+      // Refresh wallet balances from blockchain (ensure latest data)
+      const currentBalance = await this.walletRepository.getBalance(wallet.address);
+      const currentNativeBalance = await this.walletRepository.getNativeBalance(wallet.address);
+      wallet.updateBalance(currentBalance, wallet.fiatBalance, currentNativeBalance);
+
       // Estimate gas fee
       const { gasFee } = await this.transactionRepository.estimateGas(to, amount);
 
-      // Check if wallet has sufficient balance
+      // Check if wallet has sufficient balance (with latest balances)
       if (!wallet.hasSufficientBalance(amount, gasFee)) {
         throw new Error('Insufficient balance for this transaction.');
       }
+
+      // Check if PaymentProcessor has approval to spend PAYO tokens
+      console.log('[SendPaymentUseCase] Checking token approval...');
+      const approvalStatus = await TokenApprovalService.checkApproval(
+        wallet.address,
+        amount
+      );
+
+      if (!approvalStatus.hasApproval) {
+        console.error('[SendPaymentUseCase] Insufficient token approval');
+        throw new Error(
+          `PAYO tokens not approved for PaymentProcessor. Current allowance: ${approvalStatus.currentAllowance} PAYO. Please approve token spending first.`
+        );
+      }
+
+      console.log('[SendPaymentUseCase] ✓ Token approval verified');
 
       // Send transaction
       const transaction = await this.transactionRepository.sendTransaction(

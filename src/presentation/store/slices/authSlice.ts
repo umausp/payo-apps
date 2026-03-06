@@ -21,6 +21,8 @@ interface AuthState {
   lockedUntil: Date | null;
   lastActivity: Date | null;
   user: UserInfo | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -33,6 +35,8 @@ const initialState: AuthState = {
   lockedUntil: null,
   lastActivity: null,
   user: null,
+  accessToken: null,
+  refreshToken: null,
   isLoading: false,
   error: null,
 };
@@ -55,18 +59,23 @@ export const loginWithWallet = createAsyncThunk(
       }
 
       // Step 1: Get challenge from backend
+      console.log('[Auth] Step 1: Getting challenge for wallet:', wallet.address);
       const challengeResponse = await ApiService.getChallenge(wallet.address);
       if (!challengeResponse.success) {
         throw new Error(challengeResponse.error?.message || 'Failed to get authentication challenge');
       }
 
       const { message } = challengeResponse.data!;
+      console.log('[Auth] Challenge received:', message);
 
       // Step 2: Sign the challenge message
+      console.log('[Auth] Step 2: Signing challenge message');
       const ethersWallet = BlockchainService.importWalletFromPrivateKey(privateKey);
       const signature = await ethersWallet.signMessage(message);
+      console.log('[Auth] Signature created:', signature.substring(0, 20) + '...');
 
       // Step 3: Verify signature and get JWT tokens
+      console.log('[Auth] Step 3: Verifying signature with backend');
       const verifyResponse = await ApiService.verifySignature(
         wallet.address,
         signature,
@@ -77,8 +86,14 @@ export const loginWithWallet = createAsyncThunk(
         throw new Error(verifyResponse.error?.message || 'Authentication failed');
       }
 
-      const { user } = verifyResponse.data!;
+      const { user, accessToken, refreshToken } = verifyResponse.data!;
+      console.log('[Auth] ✓ Authentication successful');
+      console.log('[Auth] User ID:', user.userId);
+      console.log('[Auth] Access Token received:', accessToken ? 'YES' : 'NO');
+      console.log('[Auth] Refresh Token received:', refreshToken ? 'YES' : 'NO');
+
       // JWT tokens are automatically stored by ApiService
+      console.log('[Auth] Tokens will be stored in Redux state for persistence');
 
       return {
         user: {
@@ -86,6 +101,8 @@ export const loginWithWallet = createAsyncThunk(
           walletAddress: user.walletAddress,
           createdAt: user.createdAt,
         },
+        accessToken,
+        refreshToken,
       };
     } catch (error) {
       return rejectWithValue(
@@ -125,6 +142,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.lastActivity = null;
       state.user = null;
+      state.accessToken = null;
+      state.refreshToken = null;
     },
     incrementLoginAttempts(state) {
       state.loginAttempts += 1;
@@ -185,6 +204,8 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user;
+        state.accessToken = action.payload.accessToken;
+        state.refreshToken = action.payload.refreshToken;
         state.loginAttempts = 0;
         state.lockedUntil = null;
         state.lastActivity = new Date();
@@ -214,6 +235,8 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isAuthenticated = false;
         state.user = null;
+        state.accessToken = null;
+        state.refreshToken = null;
         state.lastActivity = null;
         state.error = null;
       })
@@ -222,6 +245,8 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isAuthenticated = false;
         state.user = null;
+        state.accessToken = null;
+        state.refreshToken = null;
         state.lastActivity = null;
       });
   },

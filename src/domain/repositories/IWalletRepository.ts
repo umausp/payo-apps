@@ -33,9 +33,14 @@ export interface IWalletRepository {
   deleteWallet(): Promise<void>;
 
   /**
-   * Get wallet balance from blockchain
+   * Get wallet balance from blockchain (PAYO tokens)
    */
   getBalance(address: string): Promise<string>;
+
+  /**
+   * Get native balance from blockchain (ETH for gas)
+   */
+  getNativeBalance(address: string): Promise<string>;
 
   /**
    * Sign transaction with private key
