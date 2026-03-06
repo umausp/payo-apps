@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../../types';
 import { useWallet } from '../../hooks/useWallet';
@@ -20,6 +20,13 @@ const DashboardScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [gasPrice, setGasPrice] = useState<string | null>(null);
 
+  // Sort transactions by timestamp (newest first)
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+    const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+    return timeB - timeA; // Descending order (newest first)
+  });
+
   useEffect(() => {
     // Load balance, transactions, and gas price on mount
     if (wallet?.address) {
@@ -27,7 +34,18 @@ const DashboardScreen: React.FC = () => {
       dispatch(loadTransactions(wallet.address));
       fetchGasPrice();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet?.address]);
+
+  // Refresh transactions when screen comes into focus (after payment)
+  useFocusEffect(
+    useCallback(() => {
+      if (wallet?.address) {
+        dispatch(refreshTransactions(wallet.address));
+        refreshBalance();
+      }
+    }, [wallet?.address, dispatch, refreshBalance])
+  );
 
   const fetchGasPrice = async () => {
     try {
@@ -127,11 +145,13 @@ const DashboardScreen: React.FC = () => {
         <View style={styles.transactionsSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Transactions</Text>
-            {transactions.length > 0 && (
-              <Text style={styles.txCount}>({transactions.length})</Text>
+            {sortedTransactions.length > 0 && (
+              <Text style={styles.txCount}>
+                ({sortedTransactions.length})
+              </Text>
             )}
           </View>
-          {transactions.length === 0 ? (
+          {sortedTransactions.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No transactions yet</Text>
               <Text style={styles.emptySubtext}>
@@ -139,27 +159,32 @@ const DashboardScreen: React.FC = () => {
               </Text>
             </View>
           ) : (
-            transactions.slice(0, 5).map((tx, index) => {
+            sortedTransactions.map((tx, index) => {
+              const status = String(tx.status).toUpperCase();
               const statusColor =
-                tx.status === 'confirmed'
+                status === 'CONFIRMED'
                   ? colors.success[500]
-                  : tx.status === 'failed'
+                  : status === 'FAILED'
                   ? colors.error[500]
                   : colors.warning[500];
 
               const statusLabel =
-                tx.status === 'confirmed'
+                status === 'CONFIRMED'
                   ? '✓ Confirmed'
-                  : tx.status === 'failed'
+                  : status === 'FAILED'
                   ? '✗ Failed'
-                  : tx.status === 'pending'
+                  : status === 'PENDING'
                   ? '⏳ Pending'
                   : '📤 Submitted';
 
               return (
-                <View key={tx.id || index} style={styles.transactionItem}>
+                <TouchableOpacity
+                  key={tx.id || index}
+                  style={styles.transactionItem}
+                  onPress={() => navigation.navigate('TransactionDetails', { transaction: tx })}
+                >
                   <View style={styles.txLeft}>
-                    <Text style={styles.txAmount}>{tx.amount || '0'} USDC</Text>
+                    <Text style={styles.txAmount}>{tx.amount || '0'} PAYO</Text>
                     <Text style={styles.txAddress}>
                       To: {tx.to ? `${tx.to.slice(0, 6)}...${tx.to.slice(-4)}` : 'Unknown'}
                     </Text>
@@ -174,7 +199,7 @@ const DashboardScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })
           )}
