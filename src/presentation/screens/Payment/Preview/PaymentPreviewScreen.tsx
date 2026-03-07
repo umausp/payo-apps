@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import LinearGradient from 'react-native-linear-gradient';
 import { RootStackParamList } from '../../../../types';
 import { useTransactions } from '../../../hooks/useTransactions';
 import { useAppSelector } from '../../../hooks/useRedux';
@@ -197,9 +199,10 @@ const PaymentPreviewScreen: React.FC = () => {
           <View style={styles.gasHeader}>
             <Text style={styles.label}>Gas Fee</Text>
             {gasEstimate && !isEstimatingGas && (
-              <Text style={styles.refreshTimer}>
-                🔄 {gasRefreshTimer}s
-              </Text>
+              <View style={styles.refreshTimerContainer}>
+                <Icon name="refresh" size={12} color={colors.primary[500]} />
+                <Text style={styles.refreshTimer}> {gasRefreshTimer}s</Text>
+              </View>
             )}
           </View>
           <View style={styles.row}>
@@ -238,9 +241,16 @@ const PaymentPreviewScreen: React.FC = () => {
             {isCheckingApproval ? (
               <ActivityIndicator size="small" color={colors.primary[500]} />
             ) : (
-              <Text style={[styles.approvalStatus, hasApproval && styles.approvalStatusSuccess]}>
-                {hasApproval ? '✓ Approved' : '✗ Not Approved'}
-              </Text>
+              <>
+                <Icon
+                  name={hasApproval ? 'check-circle' : 'cancel'}
+                  size={20}
+                  color={hasApproval ? colors.success[500] : colors.error[500]}
+                />
+                <Text style={[styles.approvalStatus, hasApproval && styles.approvalStatusSuccess]}>
+                  {hasApproval ? ' Approved' : ' Not Approved'}
+                </Text>
+              </>
             )}
           </View>
           {!hasApproval && amount && (
@@ -252,35 +262,50 @@ const PaymentPreviewScreen: React.FC = () => {
 
         {!hasApproval && amount && !hasInsufficientBalance && (
           <TouchableOpacity
-            style={[styles.button, styles.approveButton, isApproving && styles.buttonDisabled]}
             onPress={handleApprove}
             disabled={isApproving || hasInsufficientBalance}
           >
-            <Text style={styles.buttonText}>
-              {isApproving ? 'Approving...' : 'Approve PAYO Token'}
-            </Text>
+            <LinearGradient
+              colors={isApproving ? [colors.neutral[500], colors.neutral[600]] : [colors.warning[500], colors.warning[600]]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.button}
+            >
+              <Icon name="verified-user" size={20} color={colors.text.inverse} style={styles.buttonIcon} />
+              <Text style={styles.buttonText}>
+                {isApproving ? 'APPROVING...' : 'APPROVE PAYO TOKEN'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         )}
 
         <TouchableOpacity
-          style={[
-            styles.button,
-            (isSending || !amount || hasInsufficientBalance || hasInsufficientGas || !hasApproval) && styles.buttonDisabled
-          ]}
           onPress={handleConfirm}
           disabled={isSending || !amount || hasInsufficientBalance || hasInsufficientGas || !hasApproval}
         >
-          <Text style={styles.buttonText}>
-            {isSending ? 'Processing...' :
-             hasInsufficientBalance ? 'Insufficient PAYO Balance' :
-             hasInsufficientGas ? 'Insufficient ETH for Gas' :
-             !hasApproval ? 'Please Approve Token First' :
-             'Confirm Payment'}
-          </Text>
+          <LinearGradient
+            colors={
+              (isSending || !amount || hasInsufficientBalance || hasInsufficientGas || !hasApproval)
+                ? [colors.neutral[600], colors.neutral[700]]
+                : [colors.primary[500], colors.primary[600]]
+            }
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.button}
+          >
+            <Icon name="send" size={20} color={colors.text.inverse} style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>
+              {isSending ? 'PROCESSING...' :
+               hasInsufficientBalance ? 'INSUFFICIENT PAYO' :
+               hasInsufficientGas ? 'INSUFFICIENT ETH FOR GAS' :
+               !hasApproval ? 'PLEASE APPROVE TOKEN FIRST' :
+               'CONFIRM PAYMENT'}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.cancelText}>Cancel</Text>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.cancelText}>CANCEL</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -290,24 +315,35 @@ const PaymentPreviewScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background.primary },
   content: { flex: 1 },
-  scrollContent: { padding: spacing[6], paddingBottom: spacing[8] },
+  scrollContent: { padding: spacing[4], paddingBottom: spacing[8] },
   title: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: typography.fontWeight.bold as any,
+    fontSize: typography.fontSize['4xl'],
+    fontWeight: '900' as any,
     color: colors.text.primary,
-    marginBottom: spacing[6]
+    marginBottom: spacing[6],
+    letterSpacing: 0.5,
   },
   card: {
-    backgroundColor: colors.background.secondary,
-    borderRadius: borderRadius.xl,
-    padding: spacing[6],
-    marginBottom: spacing[6]
+    backgroundColor: colors.glass.background,
+    borderRadius: 20,
+    padding: spacing[5],
+    marginBottom: spacing[6],
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 0,
+    elevation: 0,
   },
   label: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
     marginBottom: spacing[2],
-    marginTop: spacing[4]
+    marginTop: spacing[4],
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    fontWeight: '700' as any,
   },
   gasHeader: {
     flexDirection: 'row',
@@ -316,29 +352,41 @@ const styles = StyleSheet.create({
     marginTop: spacing[4],
     marginBottom: spacing[2],
   },
+  refreshTimerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    paddingHorizontal: spacing[2],
+    paddingVertical: spacing[1],
+    borderRadius: borderRadius.full,
+  },
   refreshTimer: {
     fontSize: typography.fontSize.xs,
     color: colors.primary[500],
-    fontWeight: typography.fontWeight.medium as any,
+    fontWeight: '800' as any,
   },
   merchantName: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold as any,
-    color: colors.primary[500],
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: '900' as any,
+    color: colors.text.primary,
     marginBottom: spacing[2],
+    letterSpacing: 0.5,
   },
   value: {
     fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.medium as any,
-    color: colors.text.primary
+    fontWeight: '600' as any,
+    color: colors.text.primary,
+    fontFamily: typography.fontFamily.mono,
   },
   input: {
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.border.medium,
     borderRadius: borderRadius.lg,
     padding: spacing[4],
-    fontSize: typography.fontSize.lg,
-    color: colors.text.primary
+    fontSize: typography.fontSize['2xl'],
+    color: colors.text.primary,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    fontWeight: '700' as any,
   },
   inputError: {
     borderColor: colors.error[500],
@@ -346,7 +394,8 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: typography.fontSize.sm,
     color: colors.error[500],
-    marginTop: spacing[1],
+    marginTop: spacing[2],
+    fontWeight: '600' as any,
   },
   valueError: {
     color: colors.error[500],
@@ -357,8 +406,8 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border.light,
-    marginVertical: spacing[4],
+    backgroundColor: colors.border.medium,
+    marginVertical: spacing[5],
   },
   balanceRow: {
     flexDirection: 'row',
@@ -369,29 +418,47 @@ const styles = StyleSheet.create({
   balanceLabel: {
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
+    fontWeight: '600' as any,
   },
   balanceValue: {
     fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold as any,
+    fontWeight: '700' as any,
     color: colors.text.primary,
+    fontFamily: typography.fontFamily.mono,
   },
   button: {
-    backgroundColor: colors.primary[500],
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing[4],
+    flexDirection: 'row',
+    borderRadius: borderRadius.full,
+    paddingVertical: spacing[5],
+    paddingHorizontal: spacing[6],
     alignItems: 'center',
-    marginBottom: spacing[4]
+    justifyContent: 'center',
+    marginBottom: spacing[3],
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 0,
   },
-  buttonDisabled: { backgroundColor: colors.neutral[300] },
+  buttonIcon: {
+    marginRight: spacing[2],
+  },
   buttonText: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text.inverse
+    fontSize: typography.fontSize.base,
+    fontWeight: '800' as any,
+    color: colors.text.inverse,
+    letterSpacing: 1,
+  },
+  cancelButton: {
+    padding: spacing[3],
+    alignItems: 'center',
   },
   cancelText: {
     fontSize: typography.fontSize.base,
-    color: colors.primary[500],
-    textAlign: 'center'
+    color: colors.text.secondary,
+    textAlign: 'center',
+    fontWeight: '700' as any,
+    letterSpacing: 1,
   },
   approvalRow: {
     flexDirection: 'row',
@@ -399,8 +466,9 @@ const styles = StyleSheet.create({
   },
   approvalStatus: {
     fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold as any,
+    fontWeight: '800' as any,
     color: colors.error[500],
+    marginLeft: spacing[1],
   },
   approvalStatusSuccess: {
     color: colors.success[500],
@@ -408,11 +476,9 @@ const styles = StyleSheet.create({
   approvalNote: {
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
-    marginTop: spacing[2],
-    fontStyle: 'italic',
-  },
-  approveButton: {
-    backgroundColor: colors.warning[500],
+    marginTop: spacing[3],
+    fontWeight: '500' as any,
+    lineHeight: typography.lineHeight.relaxed * typography.fontSize.sm,
   },
 });
 

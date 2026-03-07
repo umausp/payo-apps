@@ -2,95 +2,124 @@
 // PAYO Wallet Design Tokens following design system best practices
 
 export const colors = {
-  // Primary Brand Colors
+  // Primary Brand - Electric Violet (Gen Z Crypto)
   primary: {
-    50: '#EEF2FF',
-    100: '#E0E7FF',
-    200: '#C7D2FE',
-    300: '#A5B4FC',
-    400: '#818CF8',
-    500: '#6366F1', // Main brand color
-    600: '#4F46E5',
-    700: '#4338CA',
-    800: '#3730A3',
-    900: '#312E81',
+    50: '#F5F3FF',
+    100: '#EDE9FE',
+    200: '#DDD6FE',
+    300: '#C4B5FD',
+    400: '#A78BFA',
+    500: '#8B5CF6', // Electric Violet - Main brand
+    600: '#7C3AED',
+    700: '#6D28D9',
+    800: '#5B21B6',
+    900: '#4C1D95',
   },
 
-  // Semantic Colors
+  // Success/Gains - Neo-Mint
   success: {
-    50: '#F0FDF4',
-    100: '#DCFCE7',
-    500: '#10B981',
-    600: '#059669',
-    700: '#047857',
+    50: '#ECFDF5',
+    100: '#D1FAE5',
+    200: '#A7F3D0',
+    300: '#6EE7B7',
+    400: '#34D399',
+    500: '#00FFA3', // Neo-Mint - Gains/Success
+    600: '#00E693',
+    700: '#00CC82',
   },
 
+  // Error/Losses - Hot Pink
   error: {
-    50: '#FEF2F2',
-    100: '#FEE2E2',
-    500: '#EF4444',
-    600: '#DC2626',
-    700: '#B91C1C',
+    50: '#FFF1F2',
+    100: '#FFE4E6',
+    200: '#FECDD3',
+    300: '#FDA4AF',
+    400: '#FB7185',
+    500: '#FF2E63', // Hot Pink - Losses/Error
+    600: '#E11D48',
+    700: '#BE123C',
   },
 
+  // Warning - Cyber Yellow
   warning: {
-    50: '#FFFBEB',
-    100: '#FEF3C7',
-    500: '#F59E0B',
-    600: '#D97706',
-    700: '#B45309',
+    50: '#FEFCE8',
+    100: '#FEF9C3',
+    500: '#FFD60A',
+    600: '#FACC15',
+    700: '#EAB308',
   },
 
+  // Info/Accent - Cyber Blue
   info: {
     50: '#EFF6FF',
     100: '#DBEAFE',
-    500: '#3B82F6',
-    600: '#2563EB',
-    700: '#1D4ED8',
+    500: '#0EA5E9',
+    600: '#0284C7',
+    700: '#0369A1',
   },
 
-  // Neutral/Grayscale
+  // Neutrals - OLED Black & Deep Ink
   neutral: {
     0: '#FFFFFF',
-    50: '#F9FAFB',
-    100: '#F3F4F6',
-    200: '#E5E7EB',
-    300: '#D1D5DB',
-    400: '#9CA3AF',
-    500: '#6B7280',
-    600: '#4B5563',
-    700: '#374151',
-    800: '#1F2937',
-    900: '#111827',
-    1000: '#000000',
+    50: '#F8FAFC',
+    100: '#F1F5F9',
+    200: '#E2E8F0',
+    300: '#CBD5E1',
+    400: '#A1A1AA', // Slate
+    500: '#71717A',
+    600: '#52525B',
+    700: '#3F3F46',
+    800: '#27272A',
+    850: '#1A1A1D',
+    900: '#121212', // Deep Ink
+    950: '#0A0A0A',
+    1000: '#050505', // OLED Black
   },
 
-  // Background
+  // Background - Dark First
   background: {
-    primary: '#FFFFFF',
-    secondary: '#F9FAFB',
-    tertiary: '#F3F4F6',
-    overlay: 'rgba(0, 0, 0, 0.5)',
+    primary: '#050505', // OLED Black
+    secondary: '#121212', // Deep Ink
+    tertiary: '#1A1A1D',
+    card: 'rgba(18, 18, 18, 0.8)', // Glassmorphism
+    overlay: 'rgba(5, 5, 5, 0.95)',
   },
 
-  // Text
+  // Text - High Contrast
   text: {
-    primary: '#111827',
-    secondary: '#6B7280',
-    tertiary: '#9CA3AF',
-    inverse: '#FFFFFF',
-    disabled: '#D1D5DB',
-    error: '#EF4444',
-    success: '#10B981',
+    primary: '#FFFFFF',
+    secondary: '#A1A1AA', // Slate
+    tertiary: '#71717A',
+    inverse: '#050505',
+    disabled: '#52525B',
+    error: '#FF2E63',
+    success: '#00FFA3',
   },
 
-  // Border
+  // Border - Subtle Glow
   border: {
-    light: '#E5E7EB',
-    medium: '#D1D5DB',
-    dark: '#9CA3AF',
-    focus: '#6366F1',
-    error: '#EF4444',
+    light: 'rgba(161, 161, 170, 0.1)', // Subtle
+    medium: 'rgba(161, 161, 170, 0.2)',
+    dark: 'rgba(161, 161, 170, 0.3)',
+    focus: '#8B5CF6',
+    glow: 'rgba(139, 92, 246, 0.5)',
+    error: '#FF2E63',
+  },
+
+  // Gradients - High Energy
+  gradient: {
+    primary: ['#8B5CF6', '#A78BFA'], // Violet gradient
+    success: ['#00FFA3', '#00E693'], // Mint gradient
+    error: ['#FF2E63', '#FB7185'], // Pink gradient
+    rainbow: ['#8B5CF6', '#00FFA3', '#0EA5E9'], // Purple-Mint-Blue
+    dark: ['#121212', '#1A1A1D'], // Dark gradient
+  },
+
+  // Glassmorphism
+  glass: {
+    background: 'rgba(18, 18, 18, 0.4)',
+    border: 'rgba(255, 255, 255, 0.1)',
+    hover: 'rgba(139, 92, 246, 0.1)',
   },
 };
 

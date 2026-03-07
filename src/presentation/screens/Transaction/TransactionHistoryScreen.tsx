@@ -173,7 +173,7 @@ const TransactionHistoryScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -216,50 +216,51 @@ const TransactionHistoryScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.secondary,
+    backgroundColor: colors.background.primary,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing[4],
-    paddingVertical: spacing[3],
-    backgroundColor: colors.background.primary,
-    elevation: 4,
+    paddingVertical: spacing[4],
+    backgroundColor: colors.background.secondary,
+    elevation: 0,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 0,
   },
   backButton: {
     padding: spacing[2],
+    backgroundColor: colors.glass.background,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
   },
   title: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold as any,
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: '900' as any,
     color: colors.text.primary,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   placeholder: {
     width: 40,
   },
   statsBar: {
     paddingHorizontal: spacing[4],
-    paddingVertical: spacing[2],
-    backgroundColor: colors.background.primary,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
+    paddingVertical: spacing[3],
+    backgroundColor: colors.background.secondary,
+    elevation: 0,
   },
   statsText: {
     fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1.5,
+    fontWeight: '700' as any,
   },
   listContent: {
     padding: spacing[4],
@@ -268,29 +269,33 @@ const styles = StyleSheet.create({
   transactionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing[3],
-    marginBottom: spacing[2],
-    backgroundColor: colors.background.primary,
-    borderRadius: borderRadius.lg,
-    elevation: 2,
+    padding: spacing[4],
+    marginBottom: spacing[3],
+    backgroundColor: colors.glass.background,
+    borderRadius: 20,
+    elevation: 0,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 0,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
   },
   txMiddle: {
     flex: 1,
     marginLeft: spacing[3],
   },
   txAmount: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold as any,
+    fontSize: typography.fontSize.lg,
+    fontWeight: '800' as any,
     color: colors.text.primary,
     marginBottom: spacing[1],
+    letterSpacing: 0.5,
   },
   txAddress: {
     fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
+    fontFamily: typography.fontFamily.mono,
   },
   txRight: {
     alignItems: 'flex-end',
@@ -299,10 +304,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing[1],
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingHorizontal: spacing[2],
+    paddingVertical: spacing[1],
+    borderRadius: borderRadius.full,
   },
   txStatus: {
     fontSize: typography.fontSize.xs,
-    fontWeight: typography.fontWeight.medium as any,
+    fontWeight: '800' as any,
     marginLeft: spacing[1],
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -310,6 +319,7 @@ const styles = StyleSheet.create({
   txDate: {
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
+    fontWeight: '500' as any,
   },
   footerLoader: {
     paddingVertical: spacing[6],
@@ -319,6 +329,7 @@ const styles = StyleSheet.create({
     marginTop: spacing[2],
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
+    fontWeight: '600' as any,
   },
   centerContainer: {
     flex: 1,
@@ -330,21 +341,24 @@ const styles = StyleSheet.create({
     marginTop: spacing[4],
     fontSize: typography.fontSize.base,
     color: colors.text.secondary,
+    fontWeight: '600' as any,
   },
   emptyContainer: {
     alignItems: 'center',
     paddingVertical: spacing[12],
   },
   emptyText: {
-    fontSize: typography.fontSize.lg,
-    color: colors.text.tertiary,
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: '800' as any,
+    color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: spacing[2],
   },
   emptySubtext: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.base,
     color: colors.text.tertiary,
     textAlign: 'center',
+    fontWeight: '500' as any,
   },
 });
 

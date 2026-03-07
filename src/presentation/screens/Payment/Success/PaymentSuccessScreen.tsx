@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import LinearGradient from 'react-native-linear-gradient';
 import { RootStackParamList } from '../../../../types';
 import { colors, spacing, typography, borderRadius } from '../../../theme/tokens';
 import ApiService from '../../../../infrastructure/api/ApiService';
@@ -91,35 +93,31 @@ const PaymentSuccessScreen: React.FC = () => {
     switch (txStatus.status) {
       case 'confirmed':
         return {
-          icon: '✅',
+          icon: 'check-circle',
           title: 'Payment Confirmed!',
           subtitle: 'Your payment has been confirmed on the blockchain',
           color: colors.success[500],
-          bgColor: colors.success[50],
         };
       case 'failed':
         return {
-          icon: '❌',
+          icon: 'error',
           title: 'Payment Failed',
           subtitle: 'The transaction failed on the blockchain',
           color: colors.error[500],
-          bgColor: colors.error[50],
         };
       case 'pending':
         return {
-          icon: '⏳',
+          icon: 'schedule',
           title: 'Payment Processing',
           subtitle: 'Waiting for blockchain confirmation...',
           color: colors.warning[500],
-          bgColor: colors.warning[50],
         };
       default:
         return {
-          icon: '📤',
+          icon: 'send',
           title: 'Payment Submitted',
           subtitle: 'Your payment has been submitted to the network',
           color: colors.primary[500],
-          bgColor: colors.primary[50],
         };
     }
   };
@@ -130,8 +128,8 @@ const PaymentSuccessScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
         {/* Status Header */}
-        <View style={[styles.statusHeader, { backgroundColor: statusInfo.bgColor }]}>
-          <Text style={styles.statusIcon}>{statusInfo.icon}</Text>
+        <View style={styles.statusHeader}>
+          <Icon name={statusInfo.icon} size={64} color={statusInfo.color} style={styles.statusIcon} />
           <Text style={[styles.statusTitle, { color: statusInfo.color }]}>
             {statusInfo.title}
           </Text>
@@ -249,23 +247,33 @@ const PaymentSuccessScreen: React.FC = () => {
         )}
 
         {/* Action Buttons */}
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('Dashboard')}
-        >
-          <Text style={styles.primaryButtonText}>Back to Dashboard</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Dashboard')}>
+          <LinearGradient
+            colors={[colors.primary[500], colors.primary[600]]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.primaryButton}
+          >
+            <Icon name="home" size={20} color={colors.text.inverse} style={styles.buttonIcon} />
+            <Text style={styles.primaryButtonText}>BACK TO DASHBOARD</Text>
+          </LinearGradient>
         </TouchableOpacity>
 
         {txStatus.txHash && (
           <TouchableOpacity
             style={styles.secondaryButton}
-            onPress={() => {
+            onPress={async () => {
               const explorerUrl = `${BLOCKCHAIN.EXPLORER_URL}/tx/${txStatus.txHash}`;
               console.log('[PaymentSuccess] Opening block explorer:', explorerUrl);
-              // TODO: Linking.openURL(explorerUrl);
+              try {
+                await Linking.openURL(explorerUrl);
+              } catch (error) {
+                console.error('[PaymentSuccess] Failed to open browser:', error);
+              }
             }}
           >
-            <Text style={styles.secondaryButtonText}>View on Block Explorer</Text>
+            <Icon name="open-in-new" size={20} color={colors.primary[500]} style={styles.buttonIcon} />
+            <Text style={styles.secondaryButtonText}>VIEW ON BLOCK EXPLORER</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -282,84 +290,109 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: spacing[6],
+    padding: spacing[4],
     paddingBottom: spacing[10],
   },
 
   // Status Header
   statusHeader: {
-    borderRadius: borderRadius['2xl'],
+    backgroundColor: colors.glass.background,
+    borderRadius: 24,
     padding: spacing[8],
-    marginBottom: spacing[6],
+    marginBottom: spacing[4],
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 0,
+    elevation: 0,
   },
   statusIcon: {
-    fontSize: 64,
     marginBottom: spacing[4],
   },
   statusTitle: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold as any,
-    marginBottom: spacing[2],
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: '900' as any,
+    marginBottom: spacing[3],
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   statusSubtitle: {
     fontSize: typography.fontSize.base,
     color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: spacing[2],
+    fontWeight: '500' as any,
   },
   pollingIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: spacing[4],
-    gap: spacing[2],
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    borderRadius: borderRadius.full,
   },
   pollingText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium as any,
+    fontSize: typography.fontSize.xs,
+    fontWeight: '700' as any,
     marginLeft: spacing[2],
   },
 
   // Amount Card
   amountCard: {
-    backgroundColor: colors.primary[500],
-    borderRadius: borderRadius.xl,
-    padding: spacing[6],
-    marginBottom: spacing[6],
+    backgroundColor: colors.glass.background,
+    borderRadius: 24,
+    padding: spacing[8],
+    marginBottom: spacing[4],
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary[500],
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 0,
   },
   amountLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.inverse,
-    opacity: 0.8,
-    marginBottom: spacing[2],
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    marginBottom: spacing[3],
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 2,
+    fontWeight: '800' as any,
   },
   amount: {
-    fontSize: 42,
-    fontWeight: typography.fontWeight.bold as any,
-    color: colors.text.inverse,
+    fontSize: 56,
+    fontWeight: '900' as any,
+    color: colors.text.primary,
     marginBottom: spacing[2],
+    letterSpacing: -1,
+    textShadowColor: 'rgba(139, 92, 246, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
   merchantName: {
-    fontSize: typography.fontSize.base,
-    color: colors.text.inverse,
-    opacity: 0.9,
+    fontSize: typography.fontSize.lg,
+    color: colors.text.secondary,
+    fontWeight: '600' as any,
   },
 
   // Card
   card: {
-    backgroundColor: colors.background.secondary,
-    borderRadius: borderRadius.xl,
-    padding: spacing[6],
+    backgroundColor: colors.glass.background,
+    borderRadius: 20,
+    padding: spacing[5],
     marginBottom: spacing[4],
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 0,
+    elevation: 0,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -368,20 +401,25 @@ const styles = StyleSheet.create({
     marginBottom: spacing[4],
   },
   cardTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.bold as any,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '800' as any,
     color: colors.text.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   confirmationBadge: {
-    backgroundColor: colors.success[100],
+    backgroundColor: 'rgba(0, 255, 163, 0.2)',
     paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
+    paddingVertical: spacing[2],
     borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.success[500],
   },
   confirmationText: {
     fontSize: typography.fontSize.xs,
-    fontWeight: typography.fontWeight.semibold as any,
-    color: colors.success[700],
+    fontWeight: '800' as any,
+    color: colors.success[500],
+    letterSpacing: 0.5,
   },
 
   // Detail Row
@@ -391,67 +429,84 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing[3],
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
+    borderBottomColor: colors.border.medium,
   },
   detailLabel: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
-    fontWeight: typography.fontWeight.medium as any,
+    fontWeight: '700' as any,
     flex: 1,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   detailValue: {
     fontSize: typography.fontSize.sm,
     color: colors.text.primary,
-    fontWeight: typography.fontWeight.semibold as any,
+    fontWeight: '500' as any,
     flex: 1.5,
     textAlign: 'right',
+    fontFamily: typography.fontFamily.mono,
   },
 
   // Status Badge
   statusBadge: {
     paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1.5],
-    borderRadius: borderRadius.md,
+    paddingVertical: spacing[2],
+    borderRadius: borderRadius.full,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   statusBadgeText: {
     fontSize: typography.fontSize.xs,
-    fontWeight: typography.fontWeight.bold as any,
+    fontWeight: '800' as any,
     letterSpacing: 0.5,
   },
 
   // Buttons
   primaryButton: {
-    backgroundColor: colors.primary[500],
-    borderRadius: borderRadius.xl,
-    paddingVertical: spacing[4],
-    paddingHorizontal: spacing[8],
+    flexDirection: 'row',
+    borderRadius: borderRadius.full,
+    paddingVertical: spacing[5],
+    paddingHorizontal: spacing[6],
     alignItems: 'center',
-    marginTop: spacing[4],
+    justifyContent: 'center',
+    marginTop: spacing[6],
     marginBottom: spacing[3],
     shadowColor: colors.primary[500],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 0,
   },
   primaryButtonText: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.bold as any,
+    fontSize: typography.fontSize.base,
+    fontWeight: '800' as any,
     color: colors.text.inverse,
+    letterSpacing: 1.5,
   },
   secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: colors.border.medium,
-    borderRadius: borderRadius.xl,
-    paddingVertical: spacing[3.5],
-    paddingHorizontal: spacing[8],
+    backgroundColor: colors.glass.background,
+    borderWidth: 2,
+    borderColor: colors.primary[500],
+    borderRadius: borderRadius.full,
+    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[6],
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 0,
   },
   secondaryButtonText: {
     fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text.secondary,
+    fontWeight: '800' as any,
+    color: colors.primary[500],
+    letterSpacing: 1,
+  },
+  buttonIcon: {
+    marginRight: spacing[2],
   },
 });
 

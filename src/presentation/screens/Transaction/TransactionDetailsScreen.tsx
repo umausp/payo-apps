@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import LinearGradient from 'react-native-linear-gradient';
 import { RootStackParamList } from '../../../types';
 import BackButton from '../../components/BackButton';
 import { colors, spacing, typography, borderRadius } from '../../theme/tokens';
@@ -280,9 +281,16 @@ const TransactionDetailsScreen: React.FC = () => {
         )}
 
         {transaction.to && (
-          <TouchableOpacity style={styles.repayButton} onPress={handleRepay}>
-            <Icon name="replay" size={20} color={colors.text.inverse} style={styles.buttonIcon} />
-            <Text style={styles.repayButtonText}>Repay to Same Merchant</Text>
+          <TouchableOpacity onPress={handleRepay}>
+            <LinearGradient
+              colors={[colors.primary[500], colors.primary[600]]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.repayButton}
+            >
+              <Icon name="replay" size={20} color={colors.text.inverse} style={styles.buttonIcon} />
+              <Text style={styles.repayButtonText}>Repay to Same Merchant</Text>
+            </LinearGradient>
           </TouchableOpacity>
         )}
 
@@ -302,136 +310,156 @@ const TransactionDetailsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.secondary,
+    backgroundColor: colors.background.primary,
   },
   content: {
     flex: 1,
     padding: spacing[4],
   },
   title: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: typography.fontWeight.bold as any,
+    fontSize: typography.fontSize['4xl'],
+    fontWeight: '900' as any,
     color: colors.text.primary,
     marginBottom: spacing[4],
     marginTop: spacing[2],
-  },
-  statusCard: {
-    backgroundColor: colors.background.primary,
-    borderRadius: borderRadius.lg,
-    padding: spacing[6],
-    marginBottom: spacing[4],
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-  },
-  statusIconContainer: {
-    marginBottom: spacing[3],
-  },
-  statusLabel: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold as any,
-    marginBottom: spacing[3],
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  statusCard: {
+    backgroundColor: colors.glass.background,
+    borderRadius: 24,
+    padding: spacing[8],
+    marginBottom: spacing[4],
+    alignItems: 'center',
+    elevation: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 0,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+  },
+  statusIconContainer: {
+    marginBottom: spacing[4],
+  },
+  statusLabel: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: '800' as any,
+    marginBottom: spacing[4],
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  },
   amount: {
-    fontSize: 40,
-    fontWeight: typography.fontWeight.bold as any,
-    color: colors.primary[500],
-    marginBottom: spacing[2],
+    fontSize: 56,
+    fontWeight: '900' as any,
+    color: colors.text.primary,
+    marginBottom: spacing[3],
+    letterSpacing: -1,
+    textShadowColor: 'rgba(139, 92, 246, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
   timestampContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: spacing[2],
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    borderRadius: borderRadius.full,
   },
   timestamp: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
     marginLeft: spacing[1],
+    fontWeight: '600' as any,
   },
   card: {
-    backgroundColor: colors.background.primary,
-    borderRadius: borderRadius.lg,
-    padding: spacing[4],
+    backgroundColor: colors.glass.background,
+    borderRadius: 20,
+    padding: spacing[5],
     marginBottom: spacing[4],
-    elevation: 2,
+    elevation: 0,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 0,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
   },
   sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.bold as any,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '800' as any,
     color: colors.text.primary,
     marginBottom: spacing[4],
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   label: {
     fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
-    marginBottom: spacing[1],
-    marginTop: spacing[3],
+    marginBottom: spacing[2],
+    marginTop: spacing[4],
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    fontWeight: typography.fontWeight.medium as any,
+    letterSpacing: 1.5,
+    fontWeight: '700' as any,
   },
   value: {
     fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.normal as any,
+    fontWeight: '500' as any,
     color: colors.text.primary,
+    fontFamily: typography.fontFamily.mono,
   },
   merchantName: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold as any,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '800' as any,
     color: colors.text.primary,
-    marginBottom: spacing[1],
+    marginBottom: spacing[2],
+    letterSpacing: 0.5,
   },
   repayButton: {
-    backgroundColor: colors.primary[500],
-    borderRadius: borderRadius.base,
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[4],
+    borderRadius: borderRadius.full,
+    paddingVertical: spacing[5],
+    paddingHorizontal: spacing[6],
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing[4],
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    elevation: 0,
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
   },
   repayButtonText: {
     fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.medium as any,
+    fontWeight: '800' as any,
     color: colors.text.inverse,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   explorerButton: {
-    backgroundColor: 'transparent',
-    borderRadius: borderRadius.base,
-    borderWidth: 1,
+    backgroundColor: colors.glass.background,
+    borderRadius: borderRadius.full,
+    borderWidth: 2,
     borderColor: colors.primary[500],
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[6],
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing[3],
+    elevation: 0,
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
   },
   explorerButtonText: {
     fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.medium as any,
+    fontWeight: '800' as any,
     color: colors.primary[500],
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   buttonIcon: {
     marginRight: spacing[2],
@@ -445,6 +473,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing[2],
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
+    fontWeight: '600' as any,
   },
 });
 
