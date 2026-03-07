@@ -41,6 +41,9 @@ export const RootNavigator: React.FC = () => {
   const { isAuthenticated, accessToken, refreshToken } = useAppSelector((state) => state.auth);
   const { wallet } = useAppSelector((state) => state.wallet);
 
+  // Track if this is the initial app mount (always show splash on first load)
+  const [isInitialMount, setIsInitialMount] = React.useState(true);
+
   useEffect(() => {
     initializeApp();
   }, []);
@@ -76,13 +79,29 @@ export const RootNavigator: React.FC = () => {
 
   const initializeApp = async () => {
     dispatch(setLoading(true));
+
+    // Show splash screen for minimum duration
+    const minSplashTime = 2000; // 2 seconds
+    const startTime = Date.now();
+
     await dispatch(loadWallet());
+
+    // Ensure splash shows for at least minSplashTime
+    const elapsedTime = Date.now() - startTime;
+    if (elapsedTime < minSplashTime) {
+      await new Promise((resolve) => setTimeout(resolve, minSplashTime - elapsedTime));
+    }
+
     dispatch(setLoading(false));
+    setIsInitialMount(false); // Mark that initial mount is complete
   };
+
+  // Show splash screen on initial mount OR when loading
+  const showSplash = isInitialMount || isLoading;
 
   return (
     <NavigationContainer>
-      {isLoading ? (
+      {showSplash ? (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Splash" component={SplashScreen} />
         </Stack.Navigator>

@@ -126,7 +126,7 @@ export const PRICE_ORACLE = {
 
 // UI Configuration
 export const UI = {
-  SPLASH_DURATION: 2000, // 2 seconds
+  SPLASH_DURATION: 3000, // 3 seconds
   TOAST_DURATION: 3000, // 3 seconds
   DEBOUNCE_DELAY: 300, // 300ms
   ANIMATION_DURATION: 200, // 200ms
@@ -201,6 +201,7 @@ export const ROUTES = {
   SETTINGS: 'Settings',
   TRANSACTION_HISTORY: 'TransactionHistory',
   TRANSACTION_DETAILS: 'TransactionDetails',
+  CONNECT_WALLET: 'ConnectWallet',
 } as const;
 
 // Performance Targets (from PDF)

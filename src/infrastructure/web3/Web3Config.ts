@@ -98,3 +98,6 @@ export const SUPPORTED_WALLETS = [
     downloadUrl: 'https://www.coinbase.com/wallet',
   },
 ] as const;
+
+// Default export
+export default appKit;

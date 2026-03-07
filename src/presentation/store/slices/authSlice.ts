@@ -192,6 +192,13 @@ const authSlice = createSlice({
     clearAuthError(state) {
       state.error = null;
     },
+    lockApp(state) {
+      // Lock the app (require re-authentication)
+      state.isAuthenticated = false;
+      state.lastActivity = null;
+      state.isLoading = false; // Reset loading state
+      state.error = null; // Clear any errors
+    },
   },
   extraReducers: (builder) => {
     // Login with wallet
@@ -264,6 +271,7 @@ export const {
   updateLastActivity,
   checkSessionTimeout,
   clearAuthError,
+  lockApp,
 } = authSlice.actions;
 
 export default authSlice.reducer;

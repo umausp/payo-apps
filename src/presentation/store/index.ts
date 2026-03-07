@@ -11,6 +11,7 @@ import {
   PERSIST,
   PURGE,
   REGISTER,
+  createTransform,
 } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers } from '@reduxjs/toolkit';
@@ -20,10 +21,31 @@ import transactionReducer from './slices/transactionSlice';
 import authReducer from './slices/authSlice';
 import appReducer from './slices/appSlice';
 
+// Transform to exclude transient state from auth persistence
+const authTransform = createTransform(
+  // Transform state on its way to being serialized and persisted
+  (inboundState: any) => {
+    // Remove transient state that shouldn't be persisted
+    const { isLoading, error, ...persistedState } = inboundState;
+    return persistedState;
+  },
+  // Transform state being rehydrated
+  (outboundState: any) => {
+    // Ensure transient state is reset on rehydration
+    return {
+      ...outboundState,
+      isLoading: false,
+      error: null,
+    };
+  },
+  { whitelist: ['auth'] }
+);
+
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
   whitelist: ['auth', 'app'], // Only persist auth and app state
+  transforms: [authTransform],
 };
 
 const rootReducer = combineReducers({

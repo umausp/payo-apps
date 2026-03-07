@@ -6,7 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../../../types';
 import { useBiometric } from '../../../hooks/useBiometric';
 import { useAppDispatch, useAppSelector } from '../../../hooks/useRedux';
-import { loginWithWallet, clearAuthError } from '../../../store/slices/authSlice';
+import { loginWithWallet, clearAuthError, lockApp } from '../../../store/slices/authSlice';
 import { colors, spacing, typography, borderRadius } from '../../../theme/tokens';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -17,9 +17,22 @@ const LoginScreen: React.FC = () => {
   const { isAvailable, authenticate } = useBiometric();
   const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
 
+  // Defensive: Reset any stale loading state on mount
+  useEffect(() => {
+    console.log('[LoginScreen] Mounted. isLoading:', isLoading, 'isAuthenticated:', isAuthenticated);
+
+    // If we're on login screen but loading is true and we're not authenticated,
+    // it means we have stale state - reset it
+    if (isLoading && !isAuthenticated) {
+      console.warn('[LoginScreen] Found stale loading state, resetting auth state...');
+      dispatch(lockApp()); // Reset to clean state
+    }
+  }, [isLoading, isAuthenticated, dispatch]);
+
   useEffect(() => {
     // Navigate to dashboard if already authenticated
     if (isAuthenticated) {
+      console.log('[LoginScreen] User authenticated, navigating to Dashboard');
       navigation.replace('Dashboard');
     }
   }, [isAuthenticated, navigation]);
@@ -27,6 +40,7 @@ const LoginScreen: React.FC = () => {
   useEffect(() => {
     // Show error alert if login fails
     if (error) {
+      console.log('[LoginScreen] Error detected:', error);
       Alert.alert(
         'Authentication Failed',
         error,
