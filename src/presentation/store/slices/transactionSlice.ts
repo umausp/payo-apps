@@ -68,19 +68,28 @@ export const loadTransactions = createAsyncThunk(
 
       const { transactions } = response.data!;
 
+      console.log('[TransactionSlice] Raw transactions from backend:', JSON.stringify(transactions, null, 2));
+
       // Map backend transaction format to app format
-      return transactions.map((tx: any) => ({
+      const mappedTransactions = transactions.map((tx: any) => ({
         id: tx._id,
         hash: tx.txHash || '',
         from: tx.walletAddress,
         to: tx.to,
-        amount: tx.amount,
-        timestamp: new Date(tx.createdAt).getTime(),
-        status: tx.status,
+        amount: tx.amount || '0',
+        fiatAmount: tx.fiatAmount || '0',
+        gasPrice: tx.gasPrice || '0',
+        gasLimit: tx.gasLimit || '21000',
+        gasFee: tx.gasFee || '0',
+        timestamp: new Date(tx.createdAt),
+        status: tx.status?.toUpperCase() || 'PENDING',
         blockNumber: tx.blockNumber,
-        confirmations: tx.confirmations || 0,
-        fee: '0',
+        type: tx.type || 'SEND',
+        metadata: tx.metadata || {},
       }));
+
+      console.log('[TransactionSlice] Mapped transactions:', JSON.stringify(mappedTransactions, null, 2));
+      return mappedTransactions;
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'Failed to load transactions',
@@ -111,19 +120,28 @@ export const refreshTransactions = createAsyncThunk(
 
       const { transactions } = response.data!;
 
+      console.log('[TransactionSlice] Raw transactions from backend (refresh):', JSON.stringify(transactions, null, 2));
+
       // Map backend transaction format to app format
-      return transactions.map((tx: any) => ({
+      const mappedTransactions = transactions.map((tx: any) => ({
         id: tx._id,
         hash: tx.txHash || '',
         from: tx.walletAddress,
         to: tx.to,
-        amount: tx.amount,
-        timestamp: new Date(tx.createdAt).getTime(),
-        status: tx.status,
+        amount: tx.amount || '0',
+        fiatAmount: tx.fiatAmount || '0',
+        gasPrice: tx.gasPrice || '0',
+        gasLimit: tx.gasLimit || '21000',
+        gasFee: tx.gasFee || '0',
+        timestamp: new Date(tx.createdAt),
+        status: tx.status?.toUpperCase() || 'PENDING',
         blockNumber: tx.blockNumber,
-        confirmations: tx.confirmations || 0,
-        fee: '0',
+        type: tx.type || 'SEND',
+        metadata: tx.metadata || {},
       }));
+
+      console.log('[TransactionSlice] Mapped transactions (refresh):', JSON.stringify(mappedTransactions, null, 2));
+      return mappedTransactions;
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'Failed to refresh transactions',

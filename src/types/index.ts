@@ -45,6 +45,7 @@ export interface TransactionMetadata {
   merchantAddress?: string;
   invoiceId?: string;
   description?: string;
+  merchantInfo?: MerchantInfo;
 }
 
 export interface QRData {

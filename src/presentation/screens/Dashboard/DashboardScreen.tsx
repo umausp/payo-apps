@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RootStackParamList } from '../../../types';
 import { useWallet } from '../../hooks/useWallet';
 import { useTransactions } from '../../hooks/useTransactions';
@@ -126,29 +127,42 @@ const DashboardScreen: React.FC = () => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('QRScanner')}
           >
-            <Text style={styles.actionText}>📷 Scan QR</Text>
+            <Icon name="call-made" size={24} color={colors.primary[500]} />
+            <Text style={styles.actionText}>SEND</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => navigation.navigate('Receive')}
           >
-            <Text style={styles.actionText}>⬇️ Receive</Text>
+            <Icon name="call-received" size={24} color={colors.primary[500]} />
+            <Text style={styles.actionText}>Receive</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => navigation.navigate('Settings')}
           >
-            <Text style={styles.actionText}>⚙️ Settings</Text>
+            <Icon name="settings" size={24} color={colors.primary[500]} />
+            <Text style={styles.actionText}>Settings</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.transactionsSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Transactions</Text>
+            <View style={styles.sectionTitleContainer}>
+              <Text style={styles.sectionTitle}>Recent Transactions</Text>
+              {sortedTransactions.length > 0 && (
+                <Text style={styles.txCount}>
+                  ({sortedTransactions.length})
+                </Text>
+              )}
+            </View>
             {sortedTransactions.length > 0 && (
-              <Text style={styles.txCount}>
-                ({sortedTransactions.length})
-              </Text>
+              <TouchableOpacity
+                style={styles.viewAllButton}
+                onPress={() => navigation.navigate('TransactionHistory')}
+              >
+                <Text style={styles.viewAllText}>View All →</Text>
+              </TouchableOpacity>
             )}
           </View>
           {sortedTransactions.length === 0 ? (
@@ -159,7 +173,7 @@ const DashboardScreen: React.FC = () => {
               </Text>
             </View>
           ) : (
-            sortedTransactions.map((tx, index) => {
+            sortedTransactions.slice(0, 5).map((tx, index) => {
               const status = String(tx.status).toUpperCase();
               const statusColor =
                 status === 'CONFIRMED'
@@ -170,12 +184,21 @@ const DashboardScreen: React.FC = () => {
 
               const statusLabel =
                 status === 'CONFIRMED'
-                  ? '✓ Confirmed'
+                  ? 'Confirmed'
                   : status === 'FAILED'
-                  ? '✗ Failed'
+                  ? 'Failed'
                   : status === 'PENDING'
-                  ? '⏳ Pending'
-                  : '📤 Submitted';
+                  ? 'Pending'
+                  : 'Submitted';
+
+              const statusIcon =
+                status === 'CONFIRMED'
+                  ? 'check-circle'
+                  : status === 'FAILED'
+                  ? 'error'
+                  : status === 'PENDING'
+                  ? 'schedule'
+                  : 'send';
 
               return (
                 <TouchableOpacity
@@ -183,16 +206,20 @@ const DashboardScreen: React.FC = () => {
                   style={styles.transactionItem}
                   onPress={() => navigation.navigate('TransactionDetails', { transaction: tx })}
                 >
-                  <View style={styles.txLeft}>
+                  <Icon name="account-balance-wallet" size={40} color={colors.primary[500]} />
+                  <View style={styles.txMiddle}>
                     <Text style={styles.txAmount}>{tx.amount || '0'} PAYO</Text>
                     <Text style={styles.txAddress}>
-                      To: {tx.to ? `${tx.to.slice(0, 6)}...${tx.to.slice(-4)}` : 'Unknown'}
+                      {tx.to ? `${tx.to.slice(0, 6)}...${tx.to.slice(-4)}` : 'Unknown'}
                     </Text>
                   </View>
                   <View style={styles.txRight}>
-                    <Text style={[styles.txStatus, { color: statusColor }]}>
-                      {statusLabel}
-                    </Text>
+                    <View style={styles.txStatusContainer}>
+                      <Icon name={statusIcon} size={16} color={statusColor} />
+                      <Text style={[styles.txStatus, { color: statusColor }]}>
+                        {statusLabel}
+                      </Text>
+                    </View>
                     {tx.timestamp && (
                       <Text style={styles.txDate}>
                         {new Date(tx.timestamp).toLocaleDateString()}
@@ -210,22 +237,32 @@ const DashboardScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background.secondary },
-  content: { flex: 1 },
+  container: {
+    flex: 1,
+    backgroundColor: colors.background.secondary,
+  },
+  content: {
+    flex: 1,
+  },
   title: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold as any,
     color: colors.text.primary,
-    padding: spacing[6],
-    paddingBottom: spacing[4]
+    padding: spacing[4],
+    paddingBottom: spacing[3],
   },
   balanceCard: {
-    margin: spacing[6],
+    margin: spacing[4],
     marginTop: 0,
     padding: spacing[6],
     backgroundColor: colors.primary[500],
-    borderRadius: borderRadius.xl,
-    alignItems: 'center'
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
   },
   balanceLabel: {
     fontSize: typography.fontSize.sm,
@@ -272,45 +309,66 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingHorizontal: spacing[6],
-    marginBottom: spacing[6]
+    paddingHorizontal: spacing[4],
+    marginBottom: spacing[4],
+    gap: spacing[2],
   },
   actionButton: {
     flex: 1,
-    marginHorizontal: spacing[1],
-    padding: spacing[4],
+    padding: spacing[3],
     backgroundColor: colors.background.primary,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2
+    shadowRadius: 2,
   },
   actionText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text.primary
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.medium as any,
+    color: colors.text.primary,
+    marginTop: spacing[1],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   transactionsSection: {
-    padding: spacing[6],
-    paddingTop: 0
+    padding: spacing[4],
+    paddingTop: 0,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing[4],
+    justifyContent: 'space-between',
+    marginBottom: spacing[3],
+  },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold as any,
     color: colors.text.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   txCount: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
     marginLeft: spacing[2],
+  },
+  viewAllButton: {
+    paddingHorizontal: spacing[2],
+    paddingVertical: spacing[1],
+  },
+  viewAllText: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.medium as any,
+    color: colors.primary[500],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -329,20 +387,20 @@ const styles = StyleSheet.create({
   },
   transactionItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing[4],
+    padding: spacing[3],
     marginBottom: spacing[2],
     backgroundColor: colors.background.primary,
     borderRadius: borderRadius.lg,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 2,
-    elevation: 1,
   },
-  txLeft: {
+  txMiddle: {
     flex: 1,
+    marginLeft: spacing[3],
   },
   txAmount: {
     fontSize: typography.fontSize.base,
@@ -357,10 +415,17 @@ const styles = StyleSheet.create({
   txRight: {
     alignItems: 'flex-end',
   },
-  txStatus: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium as any,
+  txStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: spacing[1],
+  },
+  txStatus: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.medium as any,
+    marginLeft: spacing[1],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   txDate: {
     fontSize: typography.fontSize.xs,
