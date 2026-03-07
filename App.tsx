@@ -14,6 +14,7 @@ import 'react-native-get-random-values'; // Required for crypto operations
 import { store, persistor } from './src/presentation/store';
 import RootNavigator from './src/presentation/navigation/RootNavigator';
 import { logApiConfiguration } from './src/utils/debugNetwork';
+import { Web3Provider } from './src/infrastructure/web3/Web3Provider';
 
 function App() {
   useEffect(() => {
@@ -23,14 +24,16 @@ function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ReduxProvider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <SafeAreaProvider>
-            <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-            <RootNavigator />
-          </SafeAreaProvider>
-        </PersistGate>
-      </ReduxProvider>
+      <SafeAreaProvider>
+        <ReduxProvider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <Web3Provider>
+              <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+              <RootNavigator />
+            </Web3Provider>
+          </PersistGate>
+        </ReduxProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

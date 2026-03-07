@@ -33,8 +33,8 @@ const getApiBaseUrl = (): string => {
   // Development mode
   if (__DEV__) {
     if (Platform.OS === 'android') {
-      // Android Emulator maps 10.0.2.2 to host machine's localhost
-      return 'http://10.0.2.2'; // return 'http://192.168.1.YOUR_IP';  // Your actual IP
+      // Physical device - use computer's local IP
+      return 'http://192.168.1.3'; // return 'http://10.0.2.2';  // For emulator use 10.0.2.2
     }
     // iOS Simulator can use localhost
     return 'http://localhost';

@@ -152,6 +152,7 @@ export type RootStackParamList = {
   LogViewer: undefined;
   TransactionHistory: undefined;
   TransactionDetails: { transaction: Transaction };
+  ConnectWallet: undefined;
 };
 
 export type BottomTabParamList = {

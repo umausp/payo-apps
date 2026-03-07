@@ -5,6 +5,17 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
+    <!-- Wallet detection: allows AppKit to show installed wallets -->
+    <queries>
+        <package android:name="io.metamask" />
+        <package android:name="com.wallet.crypto.trustapp" />
+        <package android:name="me.rainbow" />
+        <package android:name="org.toshi" />
+        <package android:name="com.coinbase.android" />
+        <package android:name="io.gnosis.safe" />
+        <package android:name="com.uniswap.mobile" />
+    </queries>
+
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -24,6 +35,13 @@
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="payo" />
+            <data android:scheme="https" android:host="payo.app" />
         </intent-filter>
       </activity>
     </application>

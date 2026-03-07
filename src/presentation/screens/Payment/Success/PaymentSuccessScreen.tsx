@@ -32,12 +32,12 @@ const PaymentSuccessScreen: React.FC = () => {
   });
   const [isPolling, setIsPolling] = useState(true);
 
-  // Poll transaction status from backend
+  // Poll transaction status from blockchain directly
   useEffect(() => {
-    const transactionId = (transaction as any)?.transactionId;
+    const txHash = transaction?.hash;
 
-    if (!transactionId) {
-      console.log('[PaymentSuccess] No transaction ID, stopping polling');
+    if (!txHash) {
+      console.log('[PaymentSuccess] No transaction hash, stopping polling');
       setIsPolling(false);
       return;
     }
@@ -46,26 +46,56 @@ const PaymentSuccessScreen: React.FC = () => {
 
     const checkStatus = async () => {
       try {
-        console.log('[PaymentSuccess] Checking transaction status:', transactionId);
-        const response = await ApiService.getTransactionById(transactionId);
+        console.log('[PaymentSuccess] Checking transaction status on blockchain:', txHash);
 
-        if (response.success && response.data) {
-          const tx = response.data.transaction;
-          console.log('[PaymentSuccess] Status update:', tx.status, 'Block:', tx.blockNumber);
+        // Query blockchain directly using RPC
+        const response = await fetch(BLOCKCHAIN.RPC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_getTransactionReceipt',
+            params: [txHash],
+            id: 1,
+          }),
+        });
 
-          setTxStatus({
-            status: tx.status,
-            txHash: tx.txHash,
-            blockNumber: tx.blockNumber,
-            confirmations: tx.confirmations,
+        const data = await response.json();
+
+        if (data.result) {
+          const receipt = data.result;
+          const blockNumber = parseInt(receipt.blockNumber, 16);
+
+          // Determine status from receipt
+          let status: 'confirmed' | 'failed' = 'confirmed';
+          if (receipt.status === '0x0') {
+            status = 'failed';
+          }
+
+          console.log('[PaymentSuccess] Transaction mined:', {
+            status,
+            blockNumber,
+            gasUsed: parseInt(receipt.gasUsed, 16),
           });
 
-          // Stop polling if confirmed or failed
-          if (tx.status === 'confirmed' || tx.status === 'failed') {
-            console.log('[PaymentSuccess] Final status reached, stopping polling');
-            setIsPolling(false);
-            if (pollInterval) clearInterval(pollInterval);
-          }
+          setTxStatus({
+            status,
+            txHash,
+            blockNumber,
+            confirmations: 1, // Can calculate confirmations if needed
+          });
+
+          // Stop polling once confirmed or failed
+          console.log('[PaymentSuccess] Final status reached, stopping polling');
+          setIsPolling(false);
+          if (pollInterval) clearInterval(pollInterval);
+        } else {
+          // Transaction still pending
+          console.log('[PaymentSuccess] Transaction still pending');
+          setTxStatus({
+            status: 'pending',
+            txHash,
+          });
         }
       } catch (error) {
         console.error('[PaymentSuccess] Failed to check transaction status:', error);
@@ -77,7 +107,7 @@ const PaymentSuccessScreen: React.FC = () => {
 
     // Poll every 5 seconds if not final state
     if (txStatus.status !== 'confirmed' && txStatus.status !== 'failed') {
-      console.log('[PaymentSuccess] Starting status polling (every 5s)');
+      console.log('[PaymentSuccess] Starting blockchain polling (every 5s)');
       pollInterval = setInterval(checkStatus, 5000);
     }
 
@@ -87,7 +117,7 @@ const PaymentSuccessScreen: React.FC = () => {
         clearInterval(pollInterval);
       }
     };
-  }, [(transaction as any)?.transactionId, txStatus.status]);
+  }, [transaction?.hash, txStatus.status]);
 
   const getStatusInfo = () => {
     switch (txStatus.status) {
@@ -97,6 +127,7 @@ const PaymentSuccessScreen: React.FC = () => {
           title: 'Payment Confirmed!',
           subtitle: 'Your payment has been confirmed on the blockchain',
           color: colors.success[500],
+          bgColor: 'rgba(0, 255, 163, 0.2)',
         };
       case 'failed':
         return {
@@ -104,6 +135,7 @@ const PaymentSuccessScreen: React.FC = () => {
           title: 'Payment Failed',
           subtitle: 'The transaction failed on the blockchain',
           color: colors.error[500],
+          bgColor: 'rgba(255, 46, 99, 0.2)',
         };
       case 'pending':
         return {
@@ -111,6 +143,7 @@ const PaymentSuccessScreen: React.FC = () => {
           title: 'Payment Processing',
           subtitle: 'Waiting for blockchain confirmation...',
           color: colors.warning[500],
+          bgColor: 'rgba(255, 214, 10, 0.2)',
         };
       default:
         return {
@@ -118,6 +151,7 @@ const PaymentSuccessScreen: React.FC = () => {
           title: 'Payment Submitted',
           subtitle: 'Your payment has been submitted to the network',
           color: colors.primary[500],
+          bgColor: 'rgba(139, 92, 246, 0.2)',
         };
     }
   };

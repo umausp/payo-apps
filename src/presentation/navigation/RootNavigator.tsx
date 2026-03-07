@@ -29,6 +29,7 @@ import SettingsScreen from '../screens/Settings/SettingsScreen';
 import LogViewerScreen from '../screens/Logs/LogViewerScreen';
 import TransactionDetailsScreen from '../screens/Transaction/TransactionDetailsScreen';
 import TransactionHistoryScreen from '../screens/Transaction/TransactionHistoryScreen';
+import ConnectWalletScreen from '../screens/ConnectWallet/ConnectWalletScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -144,6 +145,7 @@ export const RootNavigator: React.FC = () => {
             <Stack.Screen name="LogViewer" component={LogViewerScreen} />
             <Stack.Screen name="TransactionHistory" component={TransactionHistoryScreen} />
             <Stack.Screen name="TransactionDetails" component={TransactionDetailsScreen} />
+            <Stack.Screen name="ConnectWallet" component={ConnectWalletScreen} />
           </>
         )}
       </Stack.Navigator>

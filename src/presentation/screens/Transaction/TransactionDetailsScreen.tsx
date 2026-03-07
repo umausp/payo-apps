@@ -25,9 +25,11 @@ const TransactionDetailsScreen: React.FC = () => {
   const { transaction } = route.params;
   const [gasDetails, setGasDetails] = useState<GasDetails | null>(null);
   const [loadingGas, setLoadingGas] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(transaction.status);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   const getStatusColor = () => {
-    const status = String(transaction.status).toUpperCase();
+    const status = String(currentStatus).toUpperCase();
     switch (status) {
       case 'CONFIRMED':
         return colors.success[500];
@@ -41,7 +43,7 @@ const TransactionDetailsScreen: React.FC = () => {
   };
 
   const getStatusLabel = () => {
-    const status = String(transaction.status).toUpperCase();
+    const status = String(currentStatus).toUpperCase();
     switch (status) {
       case 'CONFIRMED':
         return 'Confirmed';
@@ -55,7 +57,7 @@ const TransactionDetailsScreen: React.FC = () => {
   };
 
   const getStatusIcon = () => {
-    const status = String(transaction.status).toUpperCase();
+    const status = String(currentStatus).toUpperCase();
     switch (status) {
       case 'CONFIRMED':
         return 'check-circle';
@@ -92,32 +94,44 @@ const TransactionDetailsScreen: React.FC = () => {
         const gasUsed = parseInt(receipt.gasUsed, 16);
         const effectiveGasPrice = parseInt(receipt.effectiveGasPrice, 16);
 
-        // Calculate gas fee using BigInt to avoid precision loss
+        // Calculate gas fee (transaction fee) using BigInt to avoid precision loss
         const gasFeeWei = BigInt(gasUsed) * BigInt(effectiveGasPrice);
+        // Convert Wei to ETH: divide by 10^18
         const gasFeeEth = Number(gasFeeWei) / 1e18;
 
-        // Format gas fee with appropriate precision (show up to 9 decimals)
-        let gasFeeFormatted = gasFeeEth.toFixed(9);
-        // Remove trailing zeros
-        gasFeeFormatted = gasFeeFormatted.replace(/\.?0+$/, '');
-        // If result is empty or 0, show at least 0.000000001
-        if (gasFeeFormatted === '' || gasFeeFormatted === '0') {
-          gasFeeFormatted = '< 0.000000001';
+        // Format to 12 decimal places (standard for ETH), then remove trailing zeros
+        let gasFeeFormatted = gasFeeEth.toFixed(12).replace(/\.?0+$/, '');
+
+        // If result is 0 or very small, show with appropriate precision
+        if (parseFloat(gasFeeFormatted) === 0 && gasFeeWei > 0n) {
+          gasFeeFormatted = '< 0.000000000001';
         }
+
+        // Convert gas price to Gwei (divide by 10^9) with proper precision
+        const gasPriceGwei = effectiveGasPrice / 1e9;
+        const gasPriceFormatted = gasPriceGwei.toFixed(9).replace(/\.?0+$/, '');
 
         console.log('[TransactionDetails] Gas calculation:', {
           gasUsed,
           effectiveGasPrice,
+          gasPriceGwei,
           gasFeeWei: gasFeeWei.toString(),
           gasFeeEth,
           gasFeeFormatted,
         });
 
         setGasDetails({
-          gasUsed: gasUsed.toString(),
-          effectiveGasPrice: (effectiveGasPrice / 1e9).toFixed(2), // Convert to Gwei
+          gasUsed: gasUsed.toLocaleString(), // Add thousand separators
+          effectiveGasPrice: gasPriceFormatted,
           gasFee: gasFeeFormatted,
         });
+
+        // Update status to CONFIRMED if transaction is mined
+        if (receipt.status === '0x1') {
+          setCurrentStatus('CONFIRMED');
+        } else if (receipt.status === '0x0') {
+          setCurrentStatus('FAILED');
+        }
       }
     } catch (error) {
       console.error('Error fetching gas details:', error);
@@ -126,11 +140,82 @@ const TransactionDetailsScreen: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (transaction.status.toUpperCase() === 'CONFIRMED') {
-      fetchGasDetails();
+  const checkTransactionStatus = async () => {
+    if (!transaction.hash) return;
+
+    try {
+      const response = await fetch(BLOCKCHAIN.RPC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_getTransactionReceipt',
+          params: [transaction.hash],
+          id: 1,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.result) {
+        const receipt = data.result;
+
+        // Transaction is mined
+        if (receipt.status === '0x1') {
+          setCurrentStatus('CONFIRMED');
+          fetchGasDetails();
+          // Stop polling once confirmed
+          if (pollingInterval) {
+            clearInterval(pollingInterval);
+            setPollingInterval(null);
+          }
+        } else if (receipt.status === '0x0') {
+          setCurrentStatus('FAILED');
+          fetchGasDetails();
+          if (pollingInterval) {
+            clearInterval(pollingInterval);
+            setPollingInterval(null);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking transaction status:', error);
     }
-  }, [transaction.hash, transaction.status]);
+  };
+
+  useEffect(() => {
+    const status = currentStatus.toUpperCase();
+
+    if (status === 'CONFIRMED') {
+      // Fetch gas details immediately for confirmed transactions
+      fetchGasDetails();
+    } else if (status === 'PENDING' || status === 'SUBMITTED') {
+      // Start polling for pending transactions
+      console.log('[TransactionDetails] Starting polling for pending transaction');
+
+      // Check immediately
+      checkTransactionStatus();
+
+      // Then poll every 5 seconds
+      const interval = setInterval(() => {
+        checkTransactionStatus();
+      }, 5000);
+
+      setPollingInterval(interval);
+
+      // Cleanup on unmount or when status changes
+      return () => {
+        clearInterval(interval);
+      };
+    }
+
+    // Cleanup function
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [transaction.hash, currentStatus]);
 
   const openInExplorer = async () => {
     if (!transaction.hash) {
@@ -182,9 +267,21 @@ const TransactionDetailsScreen: React.FC = () => {
               color={getStatusColor()}
             />
           </View>
-          <Text style={[styles.statusLabel, { color: getStatusColor() }]}>
-            {getStatusLabel()}
-          </Text>
+          <View style={styles.statusLabelContainer}>
+            <Text style={[styles.statusLabel, { color: getStatusColor() }]}>
+              {getStatusLabel()}
+            </Text>
+            {currentStatus.toUpperCase() === 'PENDING' && pollingInterval && (
+              <ActivityIndicator
+                size="small"
+                color={colors.warning[500]}
+                style={styles.pollingIndicator}
+              />
+            )}
+          </View>
+          {currentStatus.toUpperCase() === 'PENDING' && (
+            <Text style={styles.pollingText}>Checking status...</Text>
+          )}
           <Text style={styles.amount}>{transaction.amount || '0'} PAYO</Text>
           {transaction.timestamp && (
             <View style={styles.timestampContainer}>
@@ -234,7 +331,7 @@ const TransactionDetailsScreen: React.FC = () => {
           )}
         </View>
 
-        {(loadingGas || gasDetails) && transaction.status.toUpperCase() === 'CONFIRMED' && (
+        {(loadingGas || gasDetails) && currentStatus.toUpperCase() === 'CONFIRMED' && (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Gas Information</Text>
 
@@ -245,13 +342,13 @@ const TransactionDetailsScreen: React.FC = () => {
               </View>
             ) : gasDetails ? (
               <>
-                <Text style={styles.label}>Gas Fee</Text>
+                <Text style={styles.label}>Transaction Fee</Text>
                 <Text style={styles.value}>{gasDetails.gasFee} ETH</Text>
 
                 <Text style={styles.label}>Gas Used</Text>
                 <Text style={styles.value}>{gasDetails.gasUsed}</Text>
 
-                <Text style={styles.label}>Effective Gas Price</Text>
+                <Text style={styles.label}>Gas Price</Text>
                 <Text style={styles.value}>{gasDetails.effectiveGasPrice} Gwei</Text>
               </>
             ) : null}
@@ -341,12 +438,25 @@ const styles = StyleSheet.create({
   statusIconContainer: {
     marginBottom: spacing[4],
   },
+  statusLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing[2],
+  },
   statusLabel: {
     fontSize: typography.fontSize.xl,
     fontWeight: '800' as any,
-    marginBottom: spacing[4],
     textTransform: 'uppercase',
     letterSpacing: 2,
+  },
+  pollingIndicator: {
+    marginLeft: spacing[2],
+  },
+  pollingText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    marginBottom: spacing[2],
+    fontWeight: '600' as any,
   },
   amount: {
     fontSize: 56,

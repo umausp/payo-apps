@@ -122,19 +122,60 @@ const SeedPhraseScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background.primary },
   content: { flex: 1, padding: spacing[6] },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 16 },
-  warning: { fontSize: 14, color: '#EF4444', marginBottom: 24, padding: 16, backgroundColor: '#FEE2E2', borderRadius: 12 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 24 },
-  wordContainer: { width: '48%', flexDirection: 'row', alignItems: 'center', padding: 12, marginBottom: 12, backgroundColor: '#F3F4F6', borderRadius: 8 },
-  wordNumber: { fontSize: 14, color: '#6B7280', marginRight: 8 },
-  word: { fontSize: 16, fontWeight: '500', color: '#1F2937' },
-  saveTitle: { fontSize: 20, fontWeight: 'bold', color: '#1F2937', marginTop: 8, marginBottom: 8 },
-  saveDescription: { fontSize: 14, color: '#6B7280', marginBottom: 16 },
-  actionButton: { backgroundColor: '#F3F4F6', borderWidth: 2, borderColor: '#E5E7EB', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 12 },
-  actionButtonSuccess: { backgroundColor: '#D1FAE5', borderColor: '#10B981' },
-  actionButtonText: { fontSize: 16, fontWeight: '600', color: '#1F2937' },
-  continueButton: { backgroundColor: '#6366F1', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 12, marginBottom: 32 },
-  buttonText: { fontSize: 18, fontWeight: '600', color: '#FFFFFF' },
+  title: {
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: typography.fontWeight.bold as any,
+    color: colors.text.primary,
+    marginBottom: spacing[4]
+  },
+  warning: {
+    fontSize: typography.fontSize.sm,
+    color: colors.error[500],
+    marginBottom: spacing[6],
+    padding: spacing[4],
+    backgroundColor: colors.error[100],
+    borderRadius: borderRadius.md
+  },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: spacing[6] },
+  wordContainer: {
+    width: '48%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing[3],
+    marginBottom: spacing[3],
+    backgroundColor: colors.neutral[200],
+    borderRadius: borderRadius.base
+  },
+  wordNumber: { fontSize: typography.fontSize.sm, color: colors.text.primary, marginRight: spacing[2] },
+  word: { fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.medium as any, color: colors.text.primary },
+  saveTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold as any,
+    color: colors.text.primary,
+    marginTop: spacing[2],
+    marginBottom: spacing[2]
+  },
+  saveDescription: { fontSize: typography.fontSize.sm, color: colors.text.secondary, marginBottom: spacing[4] },
+  actionButton: {
+    backgroundColor: colors.background.secondary,
+    borderWidth: 2,
+    borderColor: colors.border.medium,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing[4],
+    alignItems: 'center',
+    marginBottom: spacing[3]
+  },
+  actionButtonSuccess: { backgroundColor: colors.success[100], borderColor: colors.success[500] },
+  actionButtonText: { fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold as any, color: colors.text.primary },
+  continueButton: {
+    backgroundColor: colors.primary[500],
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing[4],
+    alignItems: 'center',
+    marginTop: spacing[3],
+    marginBottom: spacing[8]
+  },
+  buttonText: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold as any, color: colors.text.inverse },
 });
 
 export default SeedPhraseScreen;

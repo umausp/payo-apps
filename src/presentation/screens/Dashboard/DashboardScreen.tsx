@@ -128,7 +128,7 @@ const DashboardScreen: React.FC = () => {
           {/* Connect Wallets Card */}
           <TouchableOpacity
             style={styles.featureCard}
-            onPress={() => navigation.navigate('Settings')}
+            onPress={() => navigation.navigate('ConnectWallet')}
           >
             <View style={styles.featureCardIcon}>
               <Icon name="account-balance-wallet" size={32} color={colors.primary[500]} />
